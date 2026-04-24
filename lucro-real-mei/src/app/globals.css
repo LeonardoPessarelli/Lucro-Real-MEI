@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0d0d0d;
+  --color-card: #111111;
+  --color-card2: #1a1a1a;
+  --color-verde: #4ade80;
+  --color-verde-dark: #16a34a;
+  --color-ambar: #f59e0b;
+  --color-roxo: #818cf8;
+  --color-vermelho: #f87171;
+}
+
+* { box-sizing: border-box; }
+body { background-color: #0d0d0d; color: #ffffff; font-family: system-ui, -apple-system, sans-serif; }
