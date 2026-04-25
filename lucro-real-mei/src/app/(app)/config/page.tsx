@@ -4,11 +4,11 @@ import PotesSliders from '@/components/config/PotesSliders'
 
 export default async function ConfigPage() {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
   const { data: profile } = await supabase
-    .from('profiles').select('pote_custos_pct, pote_reserva_pct')
-    .eq('id', session.user.id).single()
+    .from('profiles').select('pote_custos_pct, pote_reserva_pct, pote_salario_pct')
+    .eq('id', user.id).single()
   return (
     <div className="px-4 pt-8 pb-4">
       <div className="mb-8">

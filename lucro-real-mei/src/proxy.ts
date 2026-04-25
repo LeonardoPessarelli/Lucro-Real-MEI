@@ -25,24 +25,24 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
   const isPublic = path.startsWith('/login') || path.startsWith('/api/')
 
-  if (!session && !isPublic) {
+  if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (session && path === '/login') {
+  if (user && path === '/login') {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  if (session && !isPublic && path !== '/assinatura') {
+  if (user && !isPublic && path !== '/assinatura') {
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('status, trial_ends_at')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (sub) {

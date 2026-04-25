@@ -7,12 +7,12 @@ import TransactionList from '@/components/resumo/TransactionList'
 
 export default async function ResumoPage() {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const [{ data: profile }, { data: transactions }] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', session.user.id).single(),
-    supabase.from('transactions').select('*').eq('user_id', session.user.id)
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('transactions').select('*').eq('user_id', user.id)
       .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
       .order('created_at', { ascending: false }),
   ])

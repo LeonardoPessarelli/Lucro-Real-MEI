@@ -4,13 +4,13 @@ import { createAsaasCustomer, getPaymentLink } from '@/lib/asaas'
 
 export default async function AssinaturaPage() {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: sub } = await supabase
     .from('subscriptions')
     .select('status, trial_ends_at, asaas_id')
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .single()
 
   const isActive = sub?.status === 'active'
@@ -21,20 +21,20 @@ export default async function AssinaturaPage() {
   async function handleAssinar(plan: 'monthly' | 'annual') {
     'use server'
     const supabaseSrv = await createClient()
-    const { data: { session: sess } } = await supabaseSrv.auth.getSession()
-    if (!sess) return
+    const { data: { user: actionUser } } = await supabaseSrv.auth.getUser()
+    if (!actionUser) return
 
     const service = createServiceClient()
     const { data: subscription } = await service
       .from('subscriptions')
       .select('asaas_id')
-      .eq('user_id', sess.user.id)
+      .eq('user_id', actionUser.id)
       .single()
 
     let asaasId = subscription?.asaas_id
     if (!asaasId) {
-      asaasId = await createAsaasCustomer(sess.user.email!, sess.user.user_metadata?.full_name ?? 'MEI')
-      await service.from('subscriptions').update({ asaas_id: asaasId }).eq('user_id', sess.user.id)
+      asaasId = await createAsaasCustomer(actionUser.email!, actionUser.user_metadata?.full_name ?? 'MEI')
+      await service.from('subscriptions').update({ asaas_id: asaasId }).eq('user_id', actionUser.id)
     }
 
     const url = await getPaymentLink(asaasId, plan)

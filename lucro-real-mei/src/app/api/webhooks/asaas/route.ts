@@ -25,6 +25,22 @@ export async function POST(request: Request) {
     await supabase.from('subscriptions')
       .update({ status: 'active' })
       .eq('user_id', sub.user_id)
+
+    // Send confirmation email
+    try {
+      const { data: userData } = await supabase.auth.admin.getUserById(sub.user_id)
+      if (userData?.user?.email) {
+        const { sendSubscriptionConfirmedEmail } = await import('@/lib/resend')
+        const planLabel = 'Mensal'
+        await sendSubscriptionConfirmedEmail(
+          userData.user.email,
+          userData.user.user_metadata?.full_name ?? 'MEI',
+          planLabel
+        )
+      }
+    } catch {
+      // non-critical
+    }
   }
 
   if (event === 'PAYMENT_OVERDUE' || event === 'SUBSCRIPTION_DELETED') {

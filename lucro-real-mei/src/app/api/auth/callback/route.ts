@@ -35,9 +35,13 @@ export async function GET(request: Request) {
         })
 
         // Boas-vindas por e-mail
-        const { sendWelcomeEmail } = await import('@/lib/resend')
-        if (session.user.email) {
-          await sendWelcomeEmail(session.user.email, session.user.user_metadata?.full_name ?? 'MEI')
+        try {
+          const { sendWelcomeEmail } = await import('@/lib/resend')
+          if (session.user.email) {
+            await sendWelcomeEmail(session.user.email, session.user.user_metadata?.full_name ?? 'MEI')
+          }
+        } catch {
+          // non-critical, don't block onboarding
         }
 
         return NextResponse.redirect(new URL('/config', requestUrl.origin))

@@ -10,6 +10,7 @@ export async function createAsaasCustomer(email: string, name: string) {
     headers,
     body: JSON.stringify({ name, email, notificationDisabled: false }),
   })
+  if (!res.ok) throw new Error(`Asaas API error ${res.status}`)
   const data = await res.json()
   return data.id as string
 }
@@ -27,6 +28,7 @@ export async function getPaymentLink(customerId: string, plan: 'monthly' | 'annu
       customer: customerId,
     }),
   })
+  if (!res.ok) throw new Error(`Asaas API error ${res.status}`)
   const data = await res.json()
   return data.url as string
 }
