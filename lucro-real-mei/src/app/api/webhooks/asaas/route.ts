@@ -31,6 +31,21 @@ export async function POST(request: Request) {
     await supabase.from('subscriptions')
       .update({ status: 'expired' })
       .eq('user_id', sub.user_id)
+
+    if (event === 'PAYMENT_OVERDUE') {
+      try {
+        const { data: userData } = await supabase.auth.admin.getUserById(sub.user_id)
+        if (userData?.user?.email) {
+          const { sendTrialExpiringEmail } = await import('@/lib/resend')
+          await sendTrialExpiringEmail(
+            userData.user.email,
+            userData.user.user_metadata?.full_name ?? 'MEI'
+          )
+        }
+      } catch {
+        // non-critical, don't fail the webhook
+      }
+    }
   }
 
   return NextResponse.json({ ok: true })
