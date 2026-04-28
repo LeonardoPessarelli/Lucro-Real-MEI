@@ -3,28 +3,33 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-interface Props { initialCustos?: number; initialReserva?: number }
+interface Props { initialCustos?: number; initialReserva?: number; isSetup?: boolean }
 
-export default function PotesSliders({ initialCustos = 40, initialReserva = 20 }: Props) {
+export default function PotesSliders({ initialCustos = 40, initialReserva = 20, isSetup = false }: Props) {
   const [custos, setCustos] = useState(initialCustos)
   const [reserva, setReserva] = useState(initialReserva)
   const [isPending, startTransition] = useTransition()
+  const [saved, setSaved] = useState(false)
+  const [erro, setErro] = useState('')
   const router = useRouter()
   const supabase = createClient()
   const salario = 100 - custos - reserva
 
-  function handleCustos(val: number) { setCustos(Math.min(val, 100 - reserva - 5)) }
-  function handleReserva(val: number) { setReserva(Math.min(val, 100 - custos - 5)) }
+  function handleCustos(val: number) { setCustos(Math.min(val, 100 - reserva - 5)); setSaved(false) }
+  function handleReserva(val: number) { setReserva(Math.min(val, 100 - custos - 5)); setSaved(false) }
 
   async function salvar() {
+    setErro('')
     startTransition(async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-      await supabase.from('profiles').update({
+      if (!session) { setErro('Sessão expirada. Faça login novamente.'); return }
+      const { error } = await supabase.from('profiles').update({
         pote_custos_pct: custos, pote_reserva_pct: reserva,
         pote_salario_pct: salario, setup_completo: true,
       }).eq('id', session.user.id)
-      router.push('/'); router.refresh()
+      if (error) { setErro('Erro ao salvar. Tente novamente.'); return }
+      if (isSetup) { router.push('/'); router.refresh() }
+      else { setSaved(true); router.refresh() }
     })
   }
 
@@ -48,9 +53,10 @@ export default function PotesSliders({ initialCustos = 40, initialReserva = 20 }
             className="w-full h-1 rounded-full disabled:opacity-60" />
         </div>
       ))}
+      {erro && <p className="text-vermelho text-xs text-center">{erro}</p>}
       <button onClick={salvar} disabled={isPending || salario < 5}
         className="w-full bg-verde text-black py-4 rounded-2xl font-bold text-sm disabled:opacity-50 mt-2">
-        {isPending ? 'Salvando...' : 'Salvar configuração'}
+        {isPending ? 'Salvando...' : saved ? '✓ Salvo!' : 'Salvar'}
       </button>
     </div>
   )

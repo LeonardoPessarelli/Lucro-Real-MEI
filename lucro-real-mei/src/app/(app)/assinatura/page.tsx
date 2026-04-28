@@ -1,6 +1,7 @@
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { createAsaasCustomer, getPaymentLink } from '@/lib/asaas'
+import AssinaturaButtons from '@/components/assinatura/AssinaturaButtons'
 
 export default async function AssinaturaPage() {
   const supabase = await createClient()
@@ -58,30 +59,8 @@ export default async function AssinaturaPage() {
         {isActive && <p className="text-verde text-sm">✅ Assinatura ativa</p>}
       </div>
 
-      {!isActive && (
-        <div className="space-y-4">
-          {plans.map((plan) => (
-            <form key={plan.id} action={handleAssinar.bind(null, plan.id)}>
-              <button
-                type="submit"
-                className="w-full bg-card2 border-2 border-card2 hover:border-verde rounded-2xl p-5 text-left transition-colors"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-bold text-white">{plan.label}</p>
-                    <p className="text-verde font-black text-xl mt-1">{plan.price}</p>
-                  </div>
-                  {plan.badge && (
-                    <span className="bg-verde/10 text-verde text-xs font-bold px-2 py-1 rounded-full">
-                      {plan.badge}
-                    </span>
-                  )}
-                </div>
-              </button>
-            </form>
-          ))}
-        </div>
-      )}
+      {!isActive && <AssinaturaButtons plans={plans} handleAssinar={handleAssinar} />}
+
     </div>
   )
 }
