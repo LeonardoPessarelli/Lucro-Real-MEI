@@ -3,9 +3,9 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-interface Props { initialCustos?: number; initialReserva?: number }
+interface Props { initialCustos?: number; initialReserva?: number; isSetup?: boolean }
 
-export default function PotesSliders({ initialCustos = 40, initialReserva = 20 }: Props) {
+export default function PotesSliders({ initialCustos = 40, initialReserva = 20, isSetup = false }: Props) {
   const [custos, setCustos] = useState(initialCustos)
   const [reserva, setReserva] = useState(initialReserva)
   const [isPending, startTransition] = useTransition()
