@@ -49,3 +49,10 @@ create policy "service_role_delete"
   on public.subscriptions
   for delete
   using (auth.role() = 'service_role');
+
+-- ============================================================
+-- 4. Revogar acesso REST à função de trigger
+-- ============================================================
+-- handle_new_user é exclusivamente interna (chamada pelo trigger).
+-- Sem este REVOKE, qualquer usuário poderia chamá-la via /rest/v1/rpc.
+revoke execute on function public.handle_new_user() from anon, authenticated;
