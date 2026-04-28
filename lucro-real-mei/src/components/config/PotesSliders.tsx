@@ -21,12 +21,12 @@ export default function PotesSliders({ initialCustos = 40, initialReserva = 20, 
   async function salvar() {
     setErro('')
     startTransition(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { setErro('Sessão expirada. Faça login novamente.'); return }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setErro('Sessão expirada. Faça login novamente.'); return }
       const { error } = await supabase.from('profiles').update({
         pote_custos_pct: custos, pote_reserva_pct: reserva,
         pote_salario_pct: salario, setup_completo: true,
-      }).eq('id', session.user.id)
+      }).eq('id', user.id)
       if (error) { setErro('Erro ao salvar. Tente novamente.'); return }
       if (isSetup) { router.push('/'); router.refresh() }
       else { setSaved(true); router.refresh() }

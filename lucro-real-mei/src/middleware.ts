@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } })
 
   const supabase = createServerClient(
@@ -46,8 +46,7 @@ export async function proxy(request: NextRequest) {
       .single()
 
     if (sub) {
-      const trialExpired = sub.status === 'trial' &&
-        new Date(sub.trial_ends_at) < new Date()
+      const trialExpired = sub.status === 'trial' && new Date(sub.trial_ends_at) < new Date()
       if (trialExpired || sub.status === 'expired') {
         return NextResponse.redirect(new URL('/assinatura', request.url))
       }

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import PotesSliders from '@/components/config/PotesSliders'
+import LogoutButton from '@/components/ui/LogoutButton'
 
 export default async function ConfigPage() {
   const supabase = await createClient()
@@ -11,9 +12,12 @@ export default async function ConfigPage() {
     .eq('id', user.id).single()
   return (
     <div className="px-4 pt-8 pb-4">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-1">Meus Potes</h1>
-        <p className="text-gray-400 text-sm">Como cada real que você recebe é dividido</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold mb-1">Meus Potes</h1>
+          <p className="text-gray-400 text-sm">Como cada real que você recebe é dividido</p>
+        </div>
+        <LogoutButton />
       </div>
       <PotesSliders
         initialCustos={profile?.pote_custos_pct}
