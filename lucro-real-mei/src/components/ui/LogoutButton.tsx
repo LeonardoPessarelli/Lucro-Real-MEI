@@ -1,5 +1,3 @@
-'use client'
-
 export default function LogoutButton({ className }: { className?: string }) {
   return (
     <form action="/api/auth/logout" method="POST">

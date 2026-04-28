@@ -18,12 +18,12 @@ export default function PotesSliders({ initialCustos = 40, initialReserva = 20, 
 
   async function salvar() {
     startTransition(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
       await supabase.from('profiles').update({
         pote_custos_pct: custos, pote_reserva_pct: reserva,
         pote_salario_pct: salario, setup_completo: true,
-      }).eq('id', session.user.id)
+      }).eq('id', user.id)
       router.push('/'); router.refresh()
     })
   }
