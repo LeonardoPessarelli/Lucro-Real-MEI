@@ -18,10 +18,10 @@ export default function RecentTransactions({ transactions }: { transactions: Tra
               <span className="text-xl">{cat?.icon ?? '💸'}</span>
               <div>
                 <p className="text-sm text-white font-medium">{t.descricao || cat?.label}</p>
-                <p className="text-xs text-gray-500">{new Date(t.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
+                <p className="text-xs text-gray-400">{(() => { const d = new Date(t.created_at); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}` })()}</p>
               </div>
             </div>
-            <span className={`font-bold text-sm ${t.tipo === 'entrada' ? 'text-verde' : 'text-vermelho'}`}>
+            <span className={`font-bold text-sm font-display ${t.tipo === 'entrada' ? 'text-verde' : 'text-vermelho'}`}>
               {t.tipo === 'entrada' ? '+' : '-'}{formatCurrency(t.valor)}
             </span>
           </div>

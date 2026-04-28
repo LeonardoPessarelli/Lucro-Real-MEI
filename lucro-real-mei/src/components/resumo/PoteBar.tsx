@@ -5,8 +5,8 @@ export default function PoteBar({ icon, label, value, total, color, barColor }: 
   return (
     <div>
       <div className="flex justify-between mb-1">
-        <span className="text-gray-400 text-sm">{icon} {label}</span>
-        <span className={`font-bold text-sm ${color}`}>{formatCurrency(value)}</span>
+        <span className="text-gray-200 text-sm font-medium">{icon} {label}</span>
+        <span className={`font-bold text-sm font-display ${color}`}>{formatCurrency(value)}</span>
       </div>
       <div className="bg-card2 rounded-full h-2">
         <div className={`${barColor} h-full rounded-full transition-all`} style={{ width: `${pct}%` }} />
