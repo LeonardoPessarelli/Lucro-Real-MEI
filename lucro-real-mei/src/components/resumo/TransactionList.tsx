@@ -5,7 +5,8 @@ import type { Transaction } from '@/types'
 function groupByDay(txs: Transaction[]) {
   const groups: Record<string, Transaction[]> = {}
   for (const t of txs) {
-    const day = new Date(t.created_at).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })
+    const d = new Date(t.created_at)
+    const day = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`
     if (!groups[day]) groups[day] = []
     groups[day].push(t)
   }
@@ -32,7 +33,7 @@ export default function TransactionList({ transactions }: { transactions: Transa
                       {t.tipo_gasto && <span className={`text-[10px] ${t.tipo_gasto === 'empresa' ? 'text-ambar' : 'text-gray-500'}`}>{t.tipo_gasto === 'empresa' ? 'Empresa' : 'Pessoal'}</span>}
                     </div>
                   </div>
-                  <span className={`font-bold text-sm ${t.tipo === 'entrada' ? 'text-verde' : 'text-vermelho'}`}>
+                  <span className={`font-bold text-sm font-display ${t.tipo === 'entrada' ? 'text-verde' : 'text-vermelho'}`}>
                     {t.tipo === 'entrada' ? '+' : '-'}{formatCurrency(t.valor)}
                   </span>
                 </div>

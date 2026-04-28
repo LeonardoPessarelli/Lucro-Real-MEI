@@ -36,10 +36,18 @@ export interface Subscription {
 export interface PotesSummary {
   total_entradas: number
   total_saidas: number
+  // alocado (baseado nas % dos potes × entradas)
   pote_custos: number
   pote_reserva: number
   pote_salario: number
+  // restante após gastos diretos
+  pote_custos_restante: number
+  pote_salario_restante: number
   lucro_pessoal: number
   saidas_empresa: number
   saidas_pessoal: number
+  // overflow coberto pela reserva
+  reserva_usada_empresa: number
+  reserva_usada_pessoal: number
+  pote_reserva_restante: number
 }

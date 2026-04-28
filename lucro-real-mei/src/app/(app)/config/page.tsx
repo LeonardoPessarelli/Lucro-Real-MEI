@@ -8,7 +8,7 @@ export default async function ConfigPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const { data: profile } = await supabase
-    .from('profiles').select('pote_custos_pct, pote_reserva_pct, pote_salario_pct')
+    .from('profiles').select('pote_custos_pct, pote_reserva_pct, pote_salario_pct, setup_completo')
     .eq('id', user.id).single()
   return (
     <div className="px-4 pt-8 pb-4">
@@ -19,7 +19,11 @@ export default async function ConfigPage() {
         </div>
         <LogoutButton />
       </div>
-      <PotesSliders initialCustos={profile?.pote_custos_pct} initialReserva={profile?.pote_reserva_pct} />
+      <PotesSliders
+        initialCustos={profile?.pote_custos_pct}
+        initialReserva={profile?.pote_reserva_pct}
+        isSetup={!profile?.setup_completo}
+      />
     </div>
   )
 }

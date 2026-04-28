@@ -3,9 +3,9 @@ export default function LogoutButton({ className }: { className?: string }) {
     <form action="/api/auth/logout" method="POST">
       <button
         type="submit"
-        className={className ?? 'text-gray-500 text-xs hover:text-vermelho transition-colors'}
+        className={className ?? 'flex items-center gap-1 text-gray-500 hover:text-gray-300 text-xs transition-colors'}
       >
-        Sair
+        <span>🚪</span> Sair
       </button>
     </form>
   )

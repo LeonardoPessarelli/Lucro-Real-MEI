@@ -36,7 +36,18 @@ export function calcularPotes(
   const pote_custos = (total_entradas * config.custos_pct) / 100
   const pote_reserva = (total_entradas * config.reserva_pct) / 100
   const pote_salario = (total_entradas * config.salario_pct) / 100
-  const lucro_pessoal = pote_salario - saidas_pessoal
+
+  // quanto cada pote ficou negativo (overflow que precisa vir da reserva)
+  const reserva_usada_empresa = Math.max(0, saidas_empresa - pote_custos)
+  const reserva_usada_pessoal = Math.max(0, saidas_pessoal - pote_salario)
+  const total_reserva_usada = reserva_usada_empresa + reserva_usada_pessoal
+
+  const pote_custos_restante = Math.max(0, pote_custos - saidas_empresa)
+  const pote_salario_restante = Math.max(0, pote_salario - saidas_pessoal)
+  const pote_reserva_restante = Math.max(0, pote_reserva - total_reserva_usada)
+
+  // lucro pessoal = o que sobrou no salário, descontando o que a reserva cobriu do pessoal
+  const lucro_pessoal = pote_salario_restante
 
   return {
     total_entradas,
@@ -44,9 +55,14 @@ export function calcularPotes(
     pote_custos,
     pote_reserva,
     pote_salario,
+    pote_custos_restante,
+    pote_salario_restante,
     lucro_pessoal,
     saidas_empresa,
     saidas_pessoal,
+    reserva_usada_empresa,
+    reserva_usada_pessoal,
+    pote_reserva_restante,
   }
 }
 

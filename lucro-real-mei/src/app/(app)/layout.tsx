@@ -14,8 +14,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .eq('user_id', user.id)
     .single()
 
-  if (!sub) redirect('/assinatura')
-
+  // The middleware (proxy.ts) already redirects to /assinatura when sub is missing or expired.
+  // Here we only compute the trial banner — no redirect needed to avoid loops.
   const diasRestantes = sub?.status === 'trial'
     ? Math.max(0, Math.ceil((new Date(sub.trial_ends_at).getTime() - Date.now()) / 86400000))
     : null

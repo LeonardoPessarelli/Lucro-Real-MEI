@@ -14,7 +14,14 @@ export default function BottomNav() {
           <span className="text-lg">🏠</span>Início
         </Link>
         <Link href="/resumo" className={`flex flex-col items-center gap-1 text-xs ${pathname === '/resumo' ? 'text-verde' : 'text-gray-500'}`}>
-          <span className="text-lg">📊</span>Resumo
+          <span className="text-lg">🧾</span>Resumo
+        </Link>
+        <button onClick={() => setShowModal(true)} className="bg-verde rounded-full w-14 h-14 flex items-center justify-center text-black text-2xl font-bold shadow-[0_0_20px_rgba(74,222,128,0.3)] -mt-6">+</button>
+        <Link href="/config" className={`flex flex-col items-center gap-1 text-xs ${pathname === '/config' ? 'text-verde' : 'text-gray-500'}`}>
+          <span className="text-lg">📊</span>Distribuição
+        </Link>
+        <Link href="/assinatura" className={`flex flex-col items-center gap-1 text-xs ${pathname === '/assinatura' ? 'text-verde' : 'text-gray-500'}`}>
+          <span className="text-lg">⚙️</span>Conta
         </Link>
         <button onClick={() => setShowModal(true)} className="bg-verde rounded-full w-14 h-14 flex items-center justify-center text-black text-2xl font-bold shadow-[0_0_20px_rgba(74,222,128,0.3)] -mt-6">+</button>
         <Link href="/config" className={`flex flex-col items-center gap-1 text-xs ${pathname === '/config' ? 'text-verde' : 'text-gray-500'}`}>

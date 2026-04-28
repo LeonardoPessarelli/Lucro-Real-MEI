@@ -1,2 +1,52 @@
+# Worktrees e superpowers
 .worktrees/
 .superpowers/
+
+# Secrets e variáveis de ambiente — NUNCA commitar
+.env
+.env.local
+.env.*.local
+*.env
+
+# Dependências Node.js
+node_modules/
+.pnp
+.pnpm-debug.log*
+
+# Build Next.js
+.next/
+out/
+build/
+
+# Vercel
+.vercel
+
+# TypeScript cache
+*.tsbuildinfo
+next-env.d.ts
+
+# Cobertura de testes
+coverage/
+.nyc_output/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Chaves e certificados
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Editor / IDE
+.idea/
+.vscode/settings.json
+*.swp
+*.swo

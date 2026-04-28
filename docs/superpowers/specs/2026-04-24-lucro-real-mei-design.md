@@ -66,13 +66,41 @@ created_at    timestamptz
 
 ### `transactions`
 ```sql
-id          uuid  PK
-user_id     uuid  FK → profiles.id
-tipo        text  CHECK (tipo IN ('entrada', 'saida'))
-valor       numeric(10,2)
-descricao   text
-created_at  timestamptz
+id           uuid  PK
+user_id      uuid  FK → profiles.id
+tipo         text  CHECK (tipo IN ('entrada', 'saida'))
+valor        numeric(10,2)
+descricao    text
+categoria    text  -- slug da categoria (ex: 'gasolina', 'mercado', 'servico')
+tipo_gasto   text  CHECK (tipo_gasto IN ('empresa', 'pessoal'))  -- só para saídas
+created_at   timestamptz
 ```
+
+### Categorias (enum fixo no frontend, sem tabela extra)
+
+**Entradas:**
+- `servico` — Serviço prestado
+- `venda` — Venda de produto
+- `outro_entrada` — Outros
+
+**Saídas — Empresa** (universais, servem para qualquer profissão):
+- `transporte` — Transporte (gasolina, Uber, ônibus, estacionamento)
+- `material` — Material / Insumo (esmalte, tinta, tecido, peça, fio)
+- `equipamento` — Equipamento (ferramenta, máquina, conserto)
+- `comunicacao` — Comunicação (celular, internet, dados)
+- `aluguel` — Aluguel / Espaço (sala, barracão, box)
+- `uniforme` — Uniforme / EPI (jaleco, luva, avental)
+- `divulgacao` — Divulgação (panfleto, anúncio, impulsionamento)
+- `outro_empresa` — Outros (empresa)
+
+**Saídas — Pessoal:**
+- `mercado` — Mercado / Alimentação
+- `padaria` — Padaria / Café
+- `cinema` — Lazer / Cinema
+- `saude` — Saúde / Farmácia
+- `outro_pessoal` — Outros (pessoal)
+
+O campo `tipo_gasto` permite ao Resumo mostrar separadamente quanto do salário foi gasto em empresa vs pessoal, ajudando o usuário a visualizar onde o dinheiro da empresa "vazou" para o pessoal.
 
 ### `subscriptions`
 ```sql
@@ -117,14 +145,17 @@ plan            text  CHECK (plan IN ('monthly', 'annual'))
 ### 2. Lançamento (modal ao tocar "+")
 - Toggle Entrada / Saída
 - Campo de valor grande (digitação direta)
+- Seletor de categoria (ícone + nome, grid de chips)
+  - Para saídas: primeiro escolhe Empresa ou Pessoal, depois a categoria específica
 - Campo de descrição (opcional)
-- Divisão automática exibida em tempo real antes de confirmar
+- Divisão automática exibida em tempo real antes de confirmar (só para entradas)
 - Botão "Confirmar lançamento"
 
 ### 3. Resumo
-- Barras de progresso dos 3 potes com valores do mês
 - Faturamento total do mês no topo
-- Lista completa de lançamentos com scroll
+- Barras de progresso dos 3 potes com valores do mês
+- Alerta visual se houver gastos pessoais classificados como "empresa" (ex: "R$150 do pote Custos foram gastos em despesas pessoais")
+- Lista completa de lançamentos com ícone de categoria, agrupada por dia
 
 ### 4. Configurar Potes (setup inicial + settings)
 - 3 sliders coloridos (amarelo / roxo / verde)
