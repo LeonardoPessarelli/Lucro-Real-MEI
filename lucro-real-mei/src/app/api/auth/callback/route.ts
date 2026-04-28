@@ -7,7 +7,8 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { data: { session } } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: { session }, error: sessionError } = await supabase.auth.exchangeCodeForSession(code)
+    if (sessionError) console.error('[auth/callback]', sessionError.message)
 
     if (session?.user) {
       const serviceClient = createServiceClient()
@@ -24,11 +25,16 @@ export async function GET(request: Request) {
         const trialEnd = new Date()
         trialEnd.setDate(trialEnd.getDate() + 7)
 
-        await serviceClient.from('subscriptions').insert({
+        const { error: insertError } = await serviceClient.from('subscriptions').insert({
           user_id: session.user.id,
           status: 'trial',
           trial_ends_at: trialEnd.toISOString(),
         })
+        // unique constraint violation (23505) = race condition, subscription já criada — continua para /config
+        if (insertError && insertError.code !== '23505') {
+          console.error('[auth/callback] insert subscription:', insertError.message)
+          return NextResponse.redirect(new URL('/', requestUrl.origin))
+        }
 
         try {
           const { sendWelcomeEmail } = await import('@/lib/resend')
