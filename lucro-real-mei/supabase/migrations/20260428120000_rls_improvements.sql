@@ -42,7 +42,8 @@ create policy "service_role_insert"
 create policy "service_role_update"
   on public.subscriptions
   for update
-  using (auth.role() = 'service_role');
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
 
 create policy "service_role_delete"
   on public.subscriptions
