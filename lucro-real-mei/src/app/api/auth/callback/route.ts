@@ -12,36 +12,34 @@ export async function GET(request: Request) {
     if (session?.user) {
       const serviceClient = createServiceClient()
 
-      // Criar profile se não existir
-      const { data: profile } = await serviceClient
-        .from('profiles')
+      // Verifica se é o primeiro login (subscription ainda não existe)
+      const { data: subscription } = await serviceClient
+        .from('subscriptions')
         .select('id')
-        .eq('id', session.user.id)
+        .eq('user_id', session.user.id)
         .single()
 
-      if (!profile) {
-        await serviceClient.from('profiles').insert({
-          id: session.user.id,
-          nome: session.user.user_metadata?.full_name ?? null,
-        })
-
-        // Criar subscription trial
+      if (!subscription) {
+        // Profile já foi criado pelo trigger on_auth_user_created
         const trialEnd = new Date()
         trialEnd.setDate(trialEnd.getDate() + 7)
+
         await serviceClient.from('subscriptions').insert({
           user_id: session.user.id,
           status: 'trial',
           trial_ends_at: trialEnd.toISOString(),
         })
 
-        // Boas-vindas por e-mail
         try {
           const { sendWelcomeEmail } = await import('@/lib/resend')
           if (session.user.email) {
-            await sendWelcomeEmail(session.user.email, session.user.user_metadata?.full_name ?? 'MEI')
+            await sendWelcomeEmail(
+              session.user.email,
+              session.user.user_metadata?.full_name ?? 'MEI'
+            )
           }
         } catch {
-          // non-critical, don't block onboarding
+          // non-critical, não bloqueia o onboarding
         }
 
         return NextResponse.redirect(new URL('/config', requestUrl.origin))
