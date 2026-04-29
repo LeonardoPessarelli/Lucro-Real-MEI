@@ -118,8 +118,8 @@ export default function LeadDetailPage() {
         <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-3">Progresso no funil</p>
         <div className="flex items-center gap-0">
           {STAGE_ORDER.filter(s => s !== 'perdido').map((s, i) => {
-            const isActive = lead.estagio === 'perdido' ? false : i <= stageIndex
-            const isCurrent = lead.estagio !== 'perdido' && s === lead.estagio
+            const isActive = currentLead.estagio === 'perdido' ? false : i <= stageIndex
+            const isCurrent = currentLead.estagio !== 'perdido' && s === currentLead.estagio
             const cfg = STAGE_CONFIG[s]
             return (
               <div key={s} className="flex-1 flex items-center">
@@ -139,7 +139,7 @@ export default function LeadDetailPage() {
                 {i < STAGE_ORDER.filter(s => s !== 'perdido').length - 1 && (
                   <div
                     className="h-0.5 flex-1 -mt-4"
-                    style={{ backgroundColor: isActive && lead.estagio !== 'perdido' && i < stageIndex ? STAGE_CONFIG[STAGE_ORDER[i + 1]].color : '#1f2937' }}
+                    style={{ backgroundColor: isActive && currentLead.estagio !== 'perdido' && i < stageIndex ? STAGE_CONFIG[STAGE_ORDER[i + 1]].color : '#1f2937' }}
                   />
                 )}
               </div>

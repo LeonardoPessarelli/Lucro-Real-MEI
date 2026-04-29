@@ -17,14 +17,21 @@ const PAGE_TITLES: Record<string, string> = {
 const PAGES_WITH_LANCAMENTO = ['/', '/resumo']
 const PAGES_WITH_LEAD = ['/leads', '/pipeline']
 
+function getTitle(pathname: string): string {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
+  if (pathname.startsWith('/leads/')) return 'Detalhes do Lead'
+  return ''
+}
+
 export default function Navbar() {
   const { toggleDrawer } = useDrawer()
   const pathname = usePathname()
   const [showLancamento, setShowLancamento] = useState(false)
   const [showLead, setShowLead] = useState(false)
 
-  const title = PAGE_TITLES[pathname] ?? ''
-  const showPlus = PAGES_WITH_LANCAMENTO.includes(pathname) || PAGES_WITH_LEAD.includes(pathname)
+  const title = getTitle(pathname)
+  const isLeadPage = PAGES_WITH_LEAD.includes(pathname) || pathname.startsWith('/leads/')
+  const showPlus = PAGES_WITH_LANCAMENTO.includes(pathname) || isLeadPage
 
   function handlePlus() {
     if (PAGES_WITH_LANCAMENTO.includes(pathname)) setShowLancamento(true)
