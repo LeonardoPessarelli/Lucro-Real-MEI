@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react'
+
 interface Props {
-  icon: string
+  icon: ReactNode
   title: string
   description: string
 }
