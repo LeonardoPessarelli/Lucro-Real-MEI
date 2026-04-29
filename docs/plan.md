@@ -154,25 +154,28 @@ FASE 2 — BACKEND & INTEGRAÇÃO
 ### M6b — Gestão de Leads UI ✅
 
 **Branch:** `feat/leads-ui` — mergeado em `main` (PR #8)
-**Objetivo:** Lista de leads com busca/filtro, kanban drag-and-drop, página de detalhe e navegação hambúrguer — dados mockados.
+**Branch:** `feat/pipeline-kanban-ui` — mergeado em `main` (PR #9)
+**Objetivo:** Lista de leads com busca/filtro, kanban drag-and-drop estilo Pipedrive, página de detalhe e navegação hambúrguer — dados mockados.
 
 #### Entregas
 
-- [x] `src/lib/leads.ts` — tipo `Lead`, `STAGE_CONFIG` (5 estágios com cores), `STAGE_ORDER`, `MOCK_LEADS`
+- [x] `src/lib/leads.ts` — tipo `Lead`, `STAGE_CONFIG` (6 estágios com cores), `STAGE_ORDER`, `MOCK_LEADS` (13 leads com `responsavel` e `prazo`)
 - [x] `src/components/layout/DrawerProvider.tsx` — Context para estado do drawer (open/close)
 - [x] `src/components/layout/Drawer.tsx` — menu lateral animado com 5 destinos (Início, Resumo, Leads, Pipeline, Potes)
 - [x] `src/components/layout/Navbar.tsx` — substituído: hambúrguer à esquerda, título dinâmico ao centro, botão "+" à direita
 - [x] `src/app/(app)/layout.tsx` — substituído: DrawerProvider + Drawer, sem BottomNav
 - [x] `src/components/ui/BottomNav.tsx` — **deletado**
-- [x] `src/components/leads/LeadCard.tsx` — card com borda esquerda colorida por estágio e badge
+- [x] `src/components/leads/LeadCard.tsx` — card com borda esquerda colorida, modo kanban (compact) e modo lista; badge de prazo com urgência e avatar de responsável
 - [x] `src/components/leads/LeadModal.tsx` — modal de CRUD (react-hook-form + Zod), campos obrigatórios validados
+- [x] `src/components/leads/NegocioModal.tsx` — modal otimizado para kanban: campos lado-a-lado, `defaultEstagio`, suporte a new/edit
 - [x] `src/components/leads/StageFilter.tsx` — chips de filtro por estágio com scroll horizontal
 - [x] `src/app/(app)/leads/page.tsx` — lista com busca por nome/serviço + filtro por estágio
 - [x] `src/app/(app)/leads/[id]/page.tsx` — detalhe do lead: info, progresso no funil, timeline de atividades
-- [x] `src/components/leads/KanbanBoard.tsx` — DndContext com PointerSensor + TouchSensor
-- [x] `src/components/leads/KanbanColumn.tsx` — coluna com drop zone e cards sortable
+- [x] `src/components/leads/KanbanBoard.tsx` — pipeline header (total aberto, fechado, win rate, barra global), DragOverlay com rotação, modal discriminado por mode
+- [x] `src/components/leads/KanbanColumn.tsx` — header Pipedrive-style (barra colorida, contagem, R$ total, % do pipeline), botão +, drop zone com empty state
 - [x] `src/app/(app)/pipeline/page.tsx` — kanban horizontal com drag-and-drop entre colunas
 - [x] `src/components/ui/EmptyState.tsx` — atualizado para aceitar `ReactNode` como ícone
+- [x] `src/app/globals.css` — classes CSS do pipeline (pipeline-*, kanban-card-*, modal-*)
 
 ---
 
@@ -378,6 +381,7 @@ feat(deploy): production deployment on Vercel + Supabase, security hardening
 | `feat/resumo-ui` | M5 | Resumo dos potes + lista completa (UI) |
 | `feat/config-ui` | M6 | Sliders de % + assinatura (UI) |
 | `feat/leads-ui` | M6b | Leads, pipeline kanban, nav hambúrguer ✅ |
+| `feat/pipeline-kanban-ui` | M6b | Pipeline Kanban estilo Pipedrive, métricas, DnD ✅ |
 | `feat/supabase-core` | M7 | Auth real + migrations + RLS ✅ |
 | `feat/leads-data` | M8 | CRUD real transações + potes ✅ |
 | `feat/billing` | M9 | Asaas checkout + webhook + trial |
@@ -394,8 +398,9 @@ feat/home-ui        → main
 feat/lancamentos-ui → main
 feat/resumo-ui      → main
 feat/config-ui      → main
-feat/leads-ui       → main  ✅
-feat/supabase-core  → main  ← ponto de virada: dados reais ✅
+feat/leads-ui               → main  ✅
+feat/pipeline-kanban-ui     → main  ✅
+feat/supabase-core          → main  ← ponto de virada: dados reais ✅
 feat/leads-data     → main  ✅
 feat/billing        → main
 feat/deploy         → main  ← produção
