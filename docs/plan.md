@@ -115,6 +115,17 @@ Para que o app funcione em produção, adicione no Vercel Dashboard → **Settin
 
 - [x] `.env.local` criado e preenchido (feat/supabase-core)
 - [x] Migração SQL executada no Supabase (tabelas profiles, transactions, subscriptions com RLS)
+- [x] Migrations de RLS hardening aplicadas (002_rls_hardening, 20260428_rls_improvements, 20260429_rls_perf_fixes)
+- [x] Trigger `on_auth_user_created` ativo — cria profile automaticamente no cadastro
+- [x] Auth conectado ao Supabase (Google OAuth + e-mail/senha + cadastro)
+- [x] Middleware de proteção de rotas (`middleware.ts`) — redireciona não-autenticados e trial expirado
+- [x] Callback OAuth (`/api/auth/callback`) — troca code, cria subscription trial, e-mail de boas-vindas
+- [x] Logout (`/api/auth/logout`) + `LogoutButton`
+- [x] RLS policies auditadas e otimizadas com `(select auth.uid())` em todas as tabelas
+- [x] `handle_new_user()` com REVOKE de PUBLIC — não exposta via `/rpc`
+- [x] BottomNav corrigido (itens duplicados removidos)
+- [x] Webhook Asaas — detecta plano do evento e salva campo `plan` na subscription
+- [ ] Leaked password protection ativar: Supabase Dashboard → Auth → Settings → Enable leaked password protection
 - [ ] Template de e-mail configurado no Supabase
 - [ ] Resend configurado (domínio verificado ou `onboarding@resend.dev`)
 - [ ] Webhook configurado no Asaas

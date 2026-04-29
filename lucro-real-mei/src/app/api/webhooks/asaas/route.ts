@@ -15,23 +15,27 @@ export async function POST(request: Request) {
   const supabase = createServiceClient()
   const { data: sub } = await supabase
     .from('subscriptions')
-    .select('user_id')
+    .select('user_id, plan')
     .eq('asaas_id', payment.customer)
     .single()
 
   if (!sub) return NextResponse.json({ ok: true })
 
   if (event === 'PAYMENT_RECEIVED' || event === 'PAYMENT_CONFIRMED') {
+    const planFromEvent: 'monthly' | 'annual' =
+      body.subscription?.billingType === 'BOLETO' && body.subscription?.cycle === 'YEARLY'
+        ? 'annual'
+        : 'monthly'
+
     await supabase.from('subscriptions')
-      .update({ status: 'active' })
+      .update({ status: 'active', plan: planFromEvent })
       .eq('user_id', sub.user_id)
 
-    // Send confirmation email
     try {
       const { data: userData } = await supabase.auth.admin.getUserById(sub.user_id)
       if (userData?.user?.email) {
         const { sendSubscriptionConfirmedEmail } = await import('@/lib/resend')
-        const planLabel = 'Mensal'
+        const planLabel = planFromEvent === 'annual' ? 'Anual' : 'Mensal'
         await sendSubscriptionConfirmedEmail(
           userData.user.email,
           userData.user.user_metadata?.full_name ?? 'MEI',
