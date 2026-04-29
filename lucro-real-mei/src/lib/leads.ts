@@ -16,15 +16,14 @@ export interface StageInfo {
   label: string
   color: string
   bgColor: string
-  order: number
 }
 
 export const STAGE_CONFIG: Record<LeadEstagio, StageInfo> = {
-  novo:       { label: 'Novo',        color: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)',  order: 0 },
-  em_contato: { label: 'Em contato',  color: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)',  order: 1 },
-  proposta:   { label: 'Proposta',    color: '#a855f7', bgColor: 'rgba(168,85,247,0.15)',  order: 2 },
-  fechado:    { label: 'Fechado',     color: '#4ade80', bgColor: 'rgba(74,222,128,0.15)',  order: 3 },
-  perdido:    { label: 'Perdido',     color: '#ef4444', bgColor: 'rgba(239,68,68,0.15)',   order: 4 },
+  novo:       { label: 'Novo',        color: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)' },
+  em_contato: { label: 'Em contato',  color: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)' },
+  proposta:   { label: 'Proposta',    color: '#a855f7', bgColor: 'rgba(168,85,247,0.15)' },
+  fechado:    { label: 'Fechado',     color: '#4ade80', bgColor: 'rgba(74,222,128,0.15)' },
+  perdido:    { label: 'Perdido',     color: '#ef4444', bgColor: 'rgba(239,68,68,0.15)' },
 }
 
 export const STAGE_ORDER: LeadEstagio[] = ['novo', 'em_contato', 'proposta', 'fechado', 'perdido']
