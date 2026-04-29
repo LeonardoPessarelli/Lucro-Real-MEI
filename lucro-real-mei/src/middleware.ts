@@ -12,9 +12,7 @@ export async function middleware(request: NextRequest) {
       cookies: {
         getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
@@ -28,8 +26,9 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname
   const isPublic = path.startsWith('/login') || path.startsWith('/api/')
+  const isOnboarding = path === '/onboarding'
 
-  if (!user && !isPublic) {
+  if (!user && !isPublic && !isOnboarding) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
@@ -38,17 +37,27 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && !isPublic) {
+    if (!isOnboarding) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('setup_completo')
+        .eq('id', user.id)
+        .single()
+
+      if (profile && profile.setup_completo === false) {
+        return NextResponse.redirect(new URL('/onboarding', request.url))
+      }
+    }
+
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('status, trial_ends_at')
       .eq('user_id', user.id)
       .single()
 
-    // Subscription ausente = race condition no primeiro login (trigger ainda rodando).
-    // Deixa passar para /config e /assinatura; bloqueia o restante.
     if (!sub) {
-      if (path !== '/config' && path !== '/assinatura') {
-        return NextResponse.redirect(new URL('/config', request.url))
+      if (path !== '/assinatura') {
+        return NextResponse.redirect(new URL('/assinatura', request.url))
       }
       return response
     }
