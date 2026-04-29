@@ -17,6 +17,12 @@ const TIMELINE_MOCK: Record<LeadEstagio, { label: string; descricao: string; dia
     { label: 'Primeiro contato', descricao: 'Mensagem enviada via WhatsApp', diasAtras: 3 },
     { label: 'Proposta enviada', descricao: 'Orçamento enviado por e-mail', diasAtras: 0 },
   ],
+  negociacao: [
+    { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 8 },
+    { label: 'Primeiro contato', descricao: 'Mensagem enviada via WhatsApp', diasAtras: 6 },
+    { label: 'Proposta enviada', descricao: 'Orçamento enviado por e-mail', diasAtras: 3 },
+    { label: 'Em negociação', descricao: 'Revisando contrato e condições', diasAtras: 0 },
+  ],
   fechado: [
     { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 12 },
     { label: 'Primeiro contato', descricao: 'Mensagem enviada via WhatsApp', diasAtras: 10 },
