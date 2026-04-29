@@ -1,23 +1,17 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
-interface EmptyStateProps {
-  icon?: ReactNode
+interface Props {
+  icon: ReactNode
   title: string
-  description?: string
-  action?: ReactNode
+  description: string
 }
 
-export default function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export default function EmptyState({ icon, title, description }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-4">
-      {icon && (
-        <div className="w-12 h-12 rounded-full bg-card2 flex items-center justify-center text-muted mb-4">
-          {icon}
-        </div>
-      )}
-      <p className="font-semibold text-white">{title}</p>
-      {description && <p className="text-muted text-sm mt-1 max-w-xs">{description}</p>}
-      {action && <div className="mt-4">{action}</div>}
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+      <span className="text-4xl mb-4">{icon}</span>
+      <p className="text-white font-semibold mb-1">{title}</p>
+      <p className="text-gray-500 text-sm">{description}</p>
     </div>
   )
 }

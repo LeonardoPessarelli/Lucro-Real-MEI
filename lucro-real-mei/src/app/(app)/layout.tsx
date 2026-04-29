@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { DesktopSidebar } from '@/components/layout/Sidebar'
+import DrawerProvider from '@/components/layout/DrawerProvider'
 import Navbar from '@/components/layout/Navbar'
-import BottomNav from '@/components/ui/BottomNav'
+import Drawer from '@/components/layout/Drawer'
 import TrialBanner from '@/components/ui/TrialBanner'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -21,26 +21,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     : null
 
   return (
-    <div className="flex min-h-screen bg-bg">
-      {/* Sidebar fixa — desktop */}
-      <DesktopSidebar />
-
-      {/* Coluna principal */}
-      <div className="flex flex-col flex-1 min-w-0">
-        {/* Trial banner */}
+    <DrawerProvider>
+      <div className="min-h-screen max-w-md mx-auto">
         {diasRestantes !== null && <TrialBanner diasRestantes={diasRestantes} />}
-
-        {/* Topbar com hamburguer mobile */}
         <Navbar />
-
-        {/* Conteúdo da página */}
-        <main className="flex-1 px-4 py-6 lg:px-8 pb-24 lg:pb-8">
+        <Drawer />
+        <main className="px-0">
           {children}
         </main>
       </div>
-
-      {/* BottomNav — só mobile (lg:hidden) */}
-      <BottomNav />
-    </div>
+    </DrawerProvider>
   )
 }

@@ -1,45 +1,63 @@
 'use client'
 import { usePathname } from 'next/navigation'
-import { MobileSidebar } from './Sidebar'
+import { useState } from 'react'
+import { useDrawer } from './DrawerProvider'
+import LancamentoModal from '@/components/lancamento/LancamentoModal'
+import LeadModal from '@/components/leads/LeadModal'
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/leads':     'Leads',
-  '/pipeline':  'Pipeline',
-  '/config':    'Configurações',
   '/':          'Início',
   '/resumo':    'Resumo',
-  '/assinatura': 'Assinatura',
+  '/leads':     'Leads',
+  '/pipeline':  'Pipeline',
+  '/config':    'Potes',
+  '/assinatura': 'Plano',
 }
+
+const PAGES_WITH_LANCAMENTO = ['/', '/resumo']
+const PAGES_WITH_LEAD = ['/leads', '/pipeline']
 
 function getTitle(pathname: string): string {
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
-  // sub-rotas: /leads/[id] → 'Leads'
-  const base = '/' + pathname.split('/')[1]
-  return PAGE_TITLES[base] ?? 'Lucro Real MEI'
-}
-
-function UserAvatar({ initials }: { initials: string }) {
-  return (
-    <div className="w-9 h-9 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
-      <span className="text-accent text-xs font-bold">{initials}</span>
-    </div>
-  )
+  if (pathname.startsWith('/leads/')) return 'Detalhes do Lead'
+  return ''
 }
 
 export default function Navbar() {
+  const { toggleDrawer } = useDrawer()
   const pathname = usePathname()
-  const title    = getTitle(pathname)
+  const [showLancamento, setShowLancamento] = useState(false)
+  const [showLead, setShowLead] = useState(false)
+
+  const title = getTitle(pathname)
+  const isLeadPage = PAGES_WITH_LEAD.includes(pathname) || pathname.startsWith('/leads/')
+  const showPlus = PAGES_WITH_LANCAMENTO.includes(pathname) || isLeadPage
+
+  function handlePlus() {
+    if (PAGES_WITH_LANCAMENTO.includes(pathname)) setShowLancamento(true)
+    else setShowLead(true)
+  }
 
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-3 px-4 h-14 bg-bg/90 backdrop-blur border-b border-border">
-      {/* Hamburguer — só mobile */}
-      <MobileSidebar />
+    <>
+      <header className="sticky top-0 z-30 bg-bg border-b border-card2 flex items-center justify-between px-4 h-14">
+        <button onClick={toggleDrawer} className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-white">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <rect y="3" width="20" height="2" rx="1"/>
+            <rect y="9" width="20" height="2" rx="1"/>
+            <rect y="15" width="20" height="2" rx="1"/>
+          </svg>
+        </button>
+        <span className="font-bold text-white">{title}</span>
+        {showPlus ? (
+          <button onClick={handlePlus} className="w-10 h-10 flex items-center justify-center text-2xl text-verde font-bold">+</button>
+        ) : (
+          <div className="w-10" />
+        )}
+      </header>
 
-      <h1 className="flex-1 font-semibold text-base">{title}</h1>
-
-      {/* Avatar fake */}
-      <UserAvatar initials="DF" />
-    </header>
+      {showLancamento && <LancamentoModal onClose={() => setShowLancamento(false)} />}
+      {showLead && <LeadModal onClose={() => setShowLead(false)} />}
+    </>
   )
 }

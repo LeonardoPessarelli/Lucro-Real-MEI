@@ -1,19 +1,10 @@
-import PageHeader from '@/components/ui/PageHeader'
-import EmptyState from '@/components/ui/EmptyState'
-import { GitBranch } from 'lucide-react'
+import { MOCK_LEADS } from '@/lib/leads'
+import KanbanBoard from '@/components/leads/KanbanBoard'
 
 export default function PipelinePage() {
   return (
-    <div>
-      <PageHeader
-        title="Pipeline"
-        description="Acompanhe seus negócios em andamento"
-      />
-      <EmptyState
-        icon={<GitBranch size={22} />}
-        title="Em breve"
-        description="Kanban com drag-and-drop para mover negócios entre etapas."
-      />
+    <div className="pt-4">
+      <KanbanBoard initialLeads={MOCK_LEADS} />
     </div>
   )
 }
