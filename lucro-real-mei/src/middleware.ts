@@ -3,23 +3,22 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request: { headers: request.headers } })
+  let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name) { return request.cookies.get(name)?.value },
-        set(name, value, options) {
-          request.cookies.set({ name, value, ...options })
-          response = NextResponse.next({ request: { headers: request.headers } })
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name, options) {
-          request.cookies.set({ name, value: '', ...options })
-          response = NextResponse.next({ request: { headers: request.headers } })
-          response.cookies.set({ name, value: '', ...options })
+        getAll() { return request.cookies.getAll() },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set(name, value)
+          )
+          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
         },
       },
     }
@@ -38,18 +37,31 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  if (user && !isPublic && path !== '/assinatura') {
+  if (user && !isPublic) {
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('status, trial_ends_at')
       .eq('user_id', user.id)
       .single()
 
-    if (sub) {
-      const trialExpired = sub.status === 'trial' && new Date(sub.trial_ends_at) < new Date()
-      if (trialExpired || sub.status === 'expired') {
-        return NextResponse.redirect(new URL('/assinatura', request.url))
+    // Subscription ausente = race condition no primeiro login (trigger ainda rodando).
+    // Deixa passar para /config e /assinatura; bloqueia o restante.
+    if (!sub) {
+      if (path !== '/config' && path !== '/assinatura') {
+        return NextResponse.redirect(new URL('/config', request.url))
       }
+      return response
+    }
+
+    const trialExpired = sub.status === 'trial' && new Date(sub.trial_ends_at) < new Date()
+    const needsPayment = trialExpired || sub.status === 'expired'
+
+    if (needsPayment && path !== '/assinatura') {
+      return NextResponse.redirect(new URL('/assinatura', request.url))
+    }
+
+    if (sub.status === 'active' && path === '/assinatura') {
+      return NextResponse.redirect(new URL('/', request.url))
     }
   }
 
