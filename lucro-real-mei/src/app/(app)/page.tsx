@@ -12,7 +12,7 @@ import LogoutButton from '@/components/ui/LogoutButton'
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/landing')
 
   const [{ data: profile }, { data: transactions }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
