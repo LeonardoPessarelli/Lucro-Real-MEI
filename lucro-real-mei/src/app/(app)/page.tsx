@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { calcularPotes } from '@/lib/potes'
+import { calcularFinanceiroDeLeads } from '@/lib/dashboard-mock'
+import { MOCK_LEADS } from '@/lib/leads'
 import SaldoCard from '@/components/home/SaldoCard'
 import PoteCard from '@/components/home/PoteCard'
 import RecentTransactions from '@/components/home/RecentTransactions'
@@ -22,8 +24,11 @@ export default async function HomePage() {
   // MODO TESTE: setup_completo ignorado para não bloquear navegação
 
   const config = { custos_pct: profile?.pote_custos_pct ?? 40, reserva_pct: profile?.pote_reserva_pct ?? 20, salario_pct: profile?.pote_salario_pct ?? 40 }
-  const summary = calcularPotes(transactions ?? [], config)
-  const recent = (transactions ?? []).slice(0, 3)
+  const txList = transactions ?? []
+  const summary = txList.length > 0
+    ? calcularPotes(txList, config)
+    : calcularFinanceiroDeLeads(MOCK_LEADS, config)
+  const recent = txList.slice(0, 3)
   const hoje = new Date()
   const mesAtual = `${String(hoje.getDate()).padStart(2,'0')}-${String(hoje.getMonth()+1).padStart(2,'0')}-${hoje.getFullYear()}`
 

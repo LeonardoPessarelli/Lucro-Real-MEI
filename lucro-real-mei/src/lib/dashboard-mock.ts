@@ -1,4 +1,21 @@
+import { calcularPotes } from './potes'
 import type { Lead } from './leads'
+import type { PotesSummary } from '@/types'
+
+export function calcularFinanceiroDeLeads(
+  leads: Lead[],
+  config = { custos_pct: 40, reserva_pct: 20, salario_pct: 40 }
+): PotesSummary {
+  const entradas = leads
+    .filter(l => l.estagio === 'ganho')
+    .map(l => ({
+      tipo: 'entrada' as const,
+      valor: l.valor,
+      tipo_gasto: null,
+      categoria: 'servico',
+    }))
+  return calcularPotes(entradas, config)
+}
 
 export interface MesHistorico {
   mes: string

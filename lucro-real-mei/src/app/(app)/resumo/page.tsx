@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { calcularPotes, formatCurrency } from '@/lib/potes'
+import { calcularFinanceiroDeLeads } from '@/lib/dashboard-mock'
+import { MOCK_LEADS } from '@/lib/leads'
 import PoteBar from '@/components/resumo/PoteBar'
 import AlertaGastos from '@/components/resumo/AlertaGastos'
 import TransactionList from '@/components/resumo/TransactionList'
@@ -18,7 +20,10 @@ export default async function ResumoPage() {
   ])
 
   const config = { custos_pct: profile?.pote_custos_pct ?? 40, reserva_pct: profile?.pote_reserva_pct ?? 20, salario_pct: profile?.pote_salario_pct ?? 40 }
-  const summary = calcularPotes(transactions ?? [], config)
+  const txList = transactions ?? []
+  const summary = txList.length > 0
+    ? calcularPotes(txList, config)
+    : calcularFinanceiroDeLeads(MOCK_LEADS, config)
   const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
 
   return (
@@ -39,7 +44,7 @@ export default async function ResumoPage() {
       <AlertaGastos reservaUsadaEmpresa={summary.reserva_usada_empresa} reservaUsadaPessoal={summary.reserva_usada_pessoal} />
       <div>
         <p className="text-gray-300 text-xs font-semibold uppercase tracking-wider mb-3">Todos os lançamentos</p>
-        <TransactionList transactions={transactions ?? []} />
+        <TransactionList transactions={txList} />
       </div>
     </div>
   )
