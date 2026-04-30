@@ -6,6 +6,7 @@ import MetricCards from '@/components/dashboard/MetricCards'
 import MetricasFinanceiras from '@/components/dashboard/MetricasFinanceiras'
 import PipelineSnapshot from '@/components/dashboard/PipelineSnapshot'
 import HistoricoFaturamento from '@/components/dashboard/HistoricoFaturamento'
+import NegociosPrazo from '@/components/dashboard/NegociosPrazo'
 import {
   calcularMetricasLeads,
   HISTORICO_MOCK,
@@ -52,6 +53,7 @@ export default function DashboardPage() {
           <MetricCards metricas={metricas} />
           <MetricasFinanceiras financeiro={FINANCEIRO_MES_MOCK} />
           <PipelineSnapshot leads={MOCK_LEADS} />
+          <NegociosPrazo leads={MOCK_LEADS} />
         </div>
       )}
 
