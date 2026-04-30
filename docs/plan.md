@@ -18,6 +18,7 @@ FASE 1 — INTERFACE (UI-first, dados mockados)
   M5  Resumo & Potes (UI)               → branch: feat/resumo-ui
   M6  Configurações & Assinatura (UI)   → branch: feat/config-ui
   M6b Gestão de Leads UI                → branch: feat/leads-ui ✅
+  M6c Landing Page                      → branch: feat/landing-page ✅
 
 FASE 2 — BACKEND & INTEGRAÇÃO
   M7  Banco de Dados & Auth Real        → branch: feat/supabase-core ✅
@@ -176,6 +177,28 @@ FASE 2 — BACKEND & INTEGRAÇÃO
 - [x] `src/app/(app)/pipeline/page.tsx` — kanban horizontal com drag-and-drop entre colunas
 - [x] `src/components/ui/EmptyState.tsx` — atualizado para aceitar `ReactNode` como ícone
 - [x] `src/app/globals.css` — classes CSS do pipeline (pipeline-*, kanban-card-*, modal-*)
+
+---
+
+### M6c — Landing Page ✅
+
+**Branch:** `feat/landing-page` — mergeado em `main` (PR #12)
+**Objetivo:** Página pública de conversão para visitantes não autenticados, com design alinhado ao design system do app.
+
+#### Entregas
+
+- [x] `src/app/(marketing)/layout.tsx` — route group sem nav do app
+- [x] `src/app/(marketing)/landing/page.tsx` — página completa em Server Component estático
+  - [x] Navbar fixa com blur, logo, links âncora e botão "Começar grátis"
+  - [x] Hero com headline bold, orbes animados em CSS e dois CTAs
+  - [x] Seção métricas: 4 cards (+47%, 3.2×, −62%, 1.200+)
+  - [x] Grid 3×2 de funcionalidades com ícones e descrições
+  - [x] Tabela de preços: Mensal (R$49,97) e Pro anual (R$499,97)
+  - [x] CTA final com orbe e botão primário
+  - [x] Footer com logo, copyright e links
+- [x] `src/app/globals.css` — ~530 linhas de CSS (landing-*, hero-*, metrica-*, feature-*, plano-*, btn-*, footer-*) com media queries mobile-first
+- [x] `src/proxy.ts` — `/landing` adicionada às rotas públicas (sem redirect para `/login`)
+- [x] `src/app/(app)/page.tsx` — redirect de `/` aponta para `/landing` quando não autenticado
 
 ---
 
@@ -382,6 +405,7 @@ feat(deploy): production deployment on Vercel + Supabase, security hardening
 | `feat/config-ui` | M6 | Sliders de % + assinatura (UI) |
 | `feat/leads-ui` | M6b | Leads, pipeline kanban, nav hambúrguer ✅ |
 | `feat/pipeline-kanban-ui` | M6b | Pipeline Kanban estilo Pipedrive, métricas, DnD ✅ |
+| `feat/landing-page` | M6c | Landing page pública de conversão ✅ |
 | `feat/supabase-core` | M7 | Auth real + migrations + RLS ✅ |
 | `feat/leads-data` | M8 | CRUD real transações + potes ✅ |
 | `feat/billing` | M9 | Asaas checkout + webhook + trial |
@@ -400,6 +424,7 @@ feat/resumo-ui      → main
 feat/config-ui      → main
 feat/leads-ui               → main  ✅
 feat/pipeline-kanban-ui     → main  ✅
+feat/landing-page           → main  ✅
 feat/supabase-core          → main  ← ponto de virada: dados reais ✅
 feat/leads-data     → main  ✅
 feat/billing        → main
