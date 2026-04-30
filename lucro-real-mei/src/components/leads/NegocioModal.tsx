@@ -12,7 +12,7 @@ const schema = z.object({
   valor:       z.string().min(1).refine(v => !isNaN(Number(v)) && Number(v) >= 0, { message: 'Valor inválido' }),
   responsavel: z.string().min(1, 'Responsável obrigatório'),
   origem:      z.string().min(1, 'Selecione a origem'),
-  estagio:     z.enum(['novo', 'em_contato', 'proposta', 'negociacao', 'fechado', 'perdido']),
+  estagio:     z.enum(['novo', 'proposta', 'negociacao', 'ganho', 'perdido']),
   prazo:       z.string().optional(),
   anotacoes:   z.string().optional(),
 })

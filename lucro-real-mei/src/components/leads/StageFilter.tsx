@@ -13,12 +13,12 @@ export default function StageFilter({ selected, onChange }: Props) {
   ]
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+    <div className="flex gap-1.5 flex-wrap">
       {chips.map(({ value, label }) => (
         <button
           key={value}
           onClick={() => onChange(value)}
-          className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors ${
             selected === value
               ? 'bg-verde text-black'
               : 'bg-card2 text-gray-400'

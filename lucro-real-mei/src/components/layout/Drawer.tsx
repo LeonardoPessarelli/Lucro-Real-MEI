@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { href: '/resumo',   icon: '🧾', label: 'Resumo' },
   { href: '/leads',    icon: '👥', label: 'Leads' },
   { href: '/pipeline', icon: '📋', label: 'Pipeline' },
-  { href: '/config',   icon: '📊', label: 'Potes' },
+  { href: '/config',   icon: '📊', label: 'Divisão de Lucros' },
 ]
 
 export default function Drawer() {

@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -37,41 +37,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && !isPublic) {
-    if (!isOnboarding) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('setup_completo')
-        .eq('id', user.id)
-        .single()
-
-      if (profile && profile.setup_completo === false) {
-        return NextResponse.redirect(new URL('/onboarding', request.url))
-      }
-    }
-
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('status, trial_ends_at')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!sub) {
-      if (path !== '/assinatura') {
-        return NextResponse.redirect(new URL('/assinatura', request.url))
-      }
-      return response
-    }
-
-    const trialExpired = sub.status === 'trial' && new Date(sub.trial_ends_at) < new Date()
-    const needsPayment = trialExpired || sub.status === 'expired'
-
-    if (needsPayment && path !== '/assinatura') {
-      return NextResponse.redirect(new URL('/assinatura', request.url))
-    }
-
-    if (sub.status === 'active' && path === '/assinatura') {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
+    // MODO TESTE: redirects de onboarding e assinatura desativados
   }
 
   return response

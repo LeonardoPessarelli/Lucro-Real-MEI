@@ -1,5 +1,5 @@
 'use server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 export async function saveOnboardingAction(workspaceName: string): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -16,5 +16,13 @@ export async function saveOnboardingAction(workspaceName: string): Promise<{ err
     .eq('id', user.id)
 
   if (error) return { error: 'Erro ao salvar. Tente novamente.' }
+
+  const service = createServiceClient()
+  const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  await service.from('subscriptions').upsert(
+    { user_id: user.id, status: 'trial', trial_ends_at: trialEndsAt },
+    { onConflict: 'user_id', ignoreDuplicates: true },
+  )
+
   return {}
 }

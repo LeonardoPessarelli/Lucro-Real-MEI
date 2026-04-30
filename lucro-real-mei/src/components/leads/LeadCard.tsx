@@ -31,7 +31,7 @@ export default function LeadCard({ lead, onClick, compact = false }: Props) {
   const stage = STAGE_CONFIG[lead.estagio]
   const dias = diasAtras(lead.created_at)
   const isPerdido = lead.estagio === 'perdido'
-  const isFechado = lead.estagio === 'fechado'
+  const isFechado = lead.estagio === 'ganho'
   const isStale = dias >= 7 && !isFechado && !isPerdido
   const prazo = prazoInfo(lead.prazo)
 
