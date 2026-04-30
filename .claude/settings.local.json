@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(gh auth *)",
+      "Bash(claude --version)",
+      "Bash(claude config *)",
+      "Bash(npm show *)",
+      "Bash(bash \"C:/Users/leoh2/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh\" --project-dir \"C:/Users/leoh2/OneDrive/Área de Trabalho/Trabalhos do Leo/ClaudeCode\")",
+      "Bash(npm test *)",
+      "Bash(npx vitest *)"
+    ]
+  }
+}

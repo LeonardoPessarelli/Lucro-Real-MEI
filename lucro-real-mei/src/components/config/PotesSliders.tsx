@@ -36,7 +36,7 @@ export default function PotesSliders({ initialCustos = 40, initialReserva = 20, 
   const sliders = [
     { label: 'Custos do negócio', icon: '💼', textColor: 'text-ambar', accentColor: '#f59e0b', value: custos, onChange: handleCustos, readOnly: false },
     { label: 'Reserva de emergência', icon: '🏦', textColor: 'text-roxo', accentColor: '#818cf8', value: reserva, onChange: handleReserva, readOnly: false },
-    { label: 'Seu salário', icon: '✅', textColor: 'text-verde', accentColor: '#4ade80', value: salario, onChange: () => {}, readOnly: true },
+    { label: 'Pró-labore', icon: '✅', textColor: 'text-verde', accentColor: '#4ade80', value: salario, onChange: () => {}, readOnly: true },
   ]
 
   return (

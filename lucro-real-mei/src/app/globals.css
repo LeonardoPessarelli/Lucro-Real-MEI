@@ -50,8 +50,6 @@ body { background-color: #0a0a0a; color: #ffffff; font-family: var(--font-sans);
 .pipeline-root {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 56px); /* subtrai a altura da Navbar */
-  overflow: hidden;
 }
 
 /* ── Header de métricas ────────────────────────────────────────────────── */

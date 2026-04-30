@@ -14,7 +14,7 @@ export default async function ConfigPage() {
     <div className="px-4 pt-8 pb-4">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold mb-1">Meus Potes</h1>
+          <h1 className="text-2xl font-bold mb-1">Divisão de Lucros</h1>
           <p className="text-gray-400 text-sm">Como cada real que você recebe é dividido</p>
         </div>
         <LogoutButton />

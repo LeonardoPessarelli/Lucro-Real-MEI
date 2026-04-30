@@ -14,7 +14,7 @@ const schema = z.object({
   responsavel: z.string().min(1, 'Responsável obrigatório'),
   prazo:       z.string().optional(),
   anotacoes:   z.string().optional(),
-  estagio:     z.enum(['novo', 'em_contato', 'proposta', 'negociacao', 'fechado', 'perdido']),
+  estagio:     z.enum(['novo', 'proposta', 'negociacao', 'ganho', 'perdido']),
 })
 
 type FormData = z.infer<typeof schema>

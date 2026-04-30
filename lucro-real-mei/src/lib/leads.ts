@@ -1,4 +1,4 @@
-export type LeadEstagio = 'novo' | 'em_contato' | 'proposta' | 'negociacao' | 'fechado' | 'perdido'
+export type LeadEstagio = 'novo' | 'proposta' | 'negociacao' | 'ganho' | 'perdido'
 
 export interface Lead {
   id: string
@@ -21,15 +21,14 @@ export interface StageInfo {
 }
 
 export const STAGE_CONFIG: Record<LeadEstagio, StageInfo> = {
-  novo:        { label: 'Novo Lead',       color: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)' },
-  em_contato:  { label: 'Contato',         color: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)' },
-  proposta:    { label: 'Proposta',        color: '#a855f7', bgColor: 'rgba(168,85,247,0.15)' },
-  negociacao:  { label: 'Negociação',      color: '#f97316', bgColor: 'rgba(249,115,22,0.15)' },
-  fechado:     { label: 'Fechado Ganho',   color: '#4ade80', bgColor: 'rgba(74,222,128,0.15)' },
-  perdido:     { label: 'Fechado Perdido', color: '#6b7280', bgColor: 'rgba(107,114,128,0.12)' },
+  novo:       { label: 'Novo Lead',   color: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)' },
+  proposta:   { label: 'Proposta',    color: '#a855f7', bgColor: 'rgba(168,85,247,0.15)' },
+  negociacao: { label: 'Negociação',  color: '#f97316', bgColor: 'rgba(249,115,22,0.15)' },
+  ganho:      { label: 'Ganho',       color: '#4ade80', bgColor: 'rgba(74,222,128,0.15)' },
+  perdido:    { label: 'Perdido',     color: '#ef4444', bgColor: 'rgba(239,68,68,0.15)' },
 }
 
-export const STAGE_ORDER: LeadEstagio[] = ['novo', 'em_contato', 'proposta', 'negociacao', 'fechado', 'perdido']
+export const STAGE_ORDER: LeadEstagio[] = ['novo', 'proposta', 'negociacao', 'ganho', 'perdido']
 
 // helpers
 const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString()
@@ -83,7 +82,7 @@ export const MOCK_LEADS: Lead[] = [
     origem: 'LinkedIn',
     servico: 'ERP Completo',
     anotacoes: 'Demo agendada para próxima semana',
-    estagio: 'em_contato',
+    estagio: 'proposta',
     responsavel: 'Leo Pessarelli',
     prazo: daysFromNow(8),
     created_at: daysAgo(4),
@@ -96,7 +95,7 @@ export const MOCK_LEADS: Lead[] = [
     origem: 'Site',
     servico: 'Gestão de Redes Sociais',
     anotacoes: null,
-    estagio: 'em_contato',
+    estagio: 'proposta',
     responsavel: 'Leo Pessarelli',
     prazo: daysFromNow(15),
     created_at: daysAgo(8),
@@ -148,7 +147,7 @@ export const MOCK_LEADS: Lead[] = [
     origem: 'Indicação',
     servico: 'E-commerce',
     anotacoes: 'Contrato assinado',
-    estagio: 'fechado',
+    estagio: 'ganho',
     responsavel: 'Leo Pessarelli',
     prazo: null,
     created_at: daysAgo(20),
@@ -161,7 +160,7 @@ export const MOCK_LEADS: Lead[] = [
     origem: 'Site',
     servico: 'Automação de Marketing',
     anotacoes: null,
-    estagio: 'fechado',
+    estagio: 'ganho',
     responsavel: 'Leo Pessarelli',
     prazo: null,
     created_at: daysAgo(18),
@@ -174,7 +173,7 @@ export const MOCK_LEADS: Lead[] = [
     origem: 'Instagram',
     servico: 'Criação de Conteúdo',
     anotacoes: null,
-    estagio: 'fechado',
+    estagio: 'ganho',
     responsavel: 'Leo Pessarelli',
     prazo: null,
     created_at: daysAgo(25),
@@ -187,7 +186,7 @@ export const MOCK_LEADS: Lead[] = [
     origem: 'Instagram',
     servico: 'Branding Completo',
     anotacoes: null,
-    estagio: 'fechado',
+    estagio: 'ganho',
     responsavel: 'Leo Pessarelli',
     prazo: null,
     created_at: daysAgo(30),

@@ -19,9 +19,9 @@ export default async function HomePage() {
       .order('created_at', { ascending: false }),
   ])
 
-  if (!profile?.setup_completo) redirect('/config')
+  // MODO TESTE: setup_completo ignorado para não bloquear navegação
 
-  const config = { custos_pct: profile.pote_custos_pct, reserva_pct: profile.pote_reserva_pct, salario_pct: profile.pote_salario_pct }
+  const config = { custos_pct: profile?.pote_custos_pct ?? 40, reserva_pct: profile?.pote_reserva_pct ?? 20, salario_pct: profile?.pote_salario_pct ?? 40 }
   const summary = calcularPotes(transactions ?? [], config)
   const recent = (transactions ?? []).slice(0, 3)
   const hoje = new Date()
@@ -32,7 +32,7 @@ export default async function HomePage() {
       <div className="flex justify-between items-start">
         <div>
           <p className="text-gray-400 text-xs capitalize">{mesAtual}</p>
-          <Saudacao nome={profile.nome} />
+          <Saudacao nome={profile?.nome ?? ''} />
         </div>
         <LogoutButton />
       </div>

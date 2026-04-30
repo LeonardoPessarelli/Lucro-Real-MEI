@@ -8,26 +8,19 @@ const TIMELINE_MOCK: Record<LeadEstagio, { label: string; descricao: string; dia
   novo: [
     { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 0 },
   ],
-  em_contato: [
-    { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 3 },
-    { label: 'Primeiro contato', descricao: 'Mensagem enviada via WhatsApp', diasAtras: 0 },
-  ],
   proposta: [
     { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 5 },
-    { label: 'Primeiro contato', descricao: 'Mensagem enviada via WhatsApp', diasAtras: 3 },
     { label: 'Proposta enviada', descricao: 'Orçamento enviado por e-mail', diasAtras: 0 },
   ],
   negociacao: [
     { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 8 },
-    { label: 'Primeiro contato', descricao: 'Mensagem enviada via WhatsApp', diasAtras: 6 },
     { label: 'Proposta enviada', descricao: 'Orçamento enviado por e-mail', diasAtras: 3 },
     { label: 'Em negociação', descricao: 'Revisando contrato e condições', diasAtras: 0 },
   ],
-  fechado: [
+  ganho: [
     { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 12 },
-    { label: 'Primeiro contato', descricao: 'Mensagem enviada via WhatsApp', diasAtras: 10 },
     { label: 'Proposta enviada', descricao: 'Orçamento enviado por e-mail', diasAtras: 7 },
-    { label: 'Negócio fechado', descricao: 'Contrato assinado e pagamento confirmado', diasAtras: 0 },
+    { label: 'Negócio ganho', descricao: 'Contrato assinado e pagamento confirmado', diasAtras: 0 },
   ],
   perdido: [
     { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 20 },

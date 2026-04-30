@@ -75,7 +75,6 @@ Novo componente Client Component:
   - 👥 Leads (`/leads`)
   - 📋 Pipeline (`/pipeline`)
   - 📊 Potes (`/config`)
-  - 💳 Plano (`/assinatura`)
 - Item ativo destacado com `text-verde`
 - Fecha ao clicar em qualquer link
 
