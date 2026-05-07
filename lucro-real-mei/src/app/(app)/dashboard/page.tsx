@@ -9,10 +9,21 @@ import HistoricoFaturamento from '@/components/dashboard/HistoricoFaturamento'
 import NegociosPrazo from '@/components/dashboard/NegociosPrazo'
 import {
   calcularMetricasLeads,
-  HISTORICO_MOCK,
-  FINANCEIRO_MES_MOCK,
+  type MesHistorico,
+  type FinanceiroMes,
 } from '@/lib/dashboard-mock'
-import { MOCK_LEADS } from '@/lib/leads'
+
+const HISTORICO_VAZIO: MesHistorico[] = []
+const FINANCEIRO_VAZIO: FinanceiroMes = {
+  total_entradas: 0,
+  pote_custos: 0,
+  pote_reserva: 0,
+  pote_salario: 0,
+  pote_custos_restante: 0,
+  pote_reserva_restante: 0,
+  pote_salario_restante: 0,
+  lucro_pessoal: 0,
+}
 
 type Tab = 'overview' | 'historico'
 
@@ -23,7 +34,7 @@ const TABS: { id: Tab; label: string }[] = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
-  const metricas = calcularMetricasLeads(MOCK_LEADS)
+  const metricas = calcularMetricasLeads([])
 
   return (
     <div className="px-4 pt-8 space-y-5">
@@ -51,14 +62,14 @@ export default function DashboardPage() {
       {activeTab === 'overview' && (
         <div className="space-y-4">
           <MetricCards metricas={metricas} />
-          <MetricasFinanceiras financeiro={FINANCEIRO_MES_MOCK} />
-          <PipelineSnapshot leads={MOCK_LEADS} />
-          <NegociosPrazo leads={MOCK_LEADS} />
+          <MetricasFinanceiras financeiro={FINANCEIRO_VAZIO} />
+          <PipelineSnapshot leads={[]} />
+          <NegociosPrazo leads={[]} />
         </div>
       )}
 
       {activeTab === 'historico' && (
-        <HistoricoFaturamento historico={HISTORICO_MOCK} />
+        <HistoricoFaturamento historico={HISTORICO_VAZIO} />
       )}
     </div>
   )

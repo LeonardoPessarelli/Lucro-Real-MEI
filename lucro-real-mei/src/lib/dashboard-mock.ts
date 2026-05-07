@@ -1,21 +1,4 @@
-import { calcularPotes } from './potes'
 import type { Lead } from './leads'
-import type { PotesSummary } from '@/types'
-
-export function calcularFinanceiroDeLeads(
-  leads: Lead[],
-  config = { custos_pct: 40, reserva_pct: 20, salario_pct: 40 }
-): PotesSummary {
-  const entradas = leads
-    .filter(l => l.estagio === 'ganho')
-    .map(l => ({
-      tipo: 'entrada' as const,
-      valor: l.valor,
-      tipo_gasto: null,
-      categoria: 'servico',
-    }))
-  return calcularPotes(entradas, config)
-}
 
 export interface MesHistorico {
   mes: string
@@ -57,22 +40,3 @@ export function calcularMetricasLeads(leads: Lead[]): MetricasLeads {
   }
 }
 
-export const HISTORICO_MOCK: MesHistorico[] = [
-  { mes: 'Nov', faturamento: 8200,  isCurrent: false },
-  { mes: 'Dez', faturamento: 11500, isCurrent: false },
-  { mes: 'Jan', faturamento: 7800,  isCurrent: false },
-  { mes: 'Fev', faturamento: 9400,  isCurrent: false },
-  { mes: 'Mar', faturamento: 12300, isCurrent: false },
-  { mes: 'Abr', faturamento: 10500, isCurrent: true  },
-]
-
-export const FINANCEIRO_MES_MOCK: FinanceiroMes = {
-  total_entradas:        10500,
-  pote_custos:           4200,
-  pote_reserva:          2100,
-  pote_salario:          4200,
-  pote_custos_restante:  2800,
-  pote_reserva_restante: 2100,
-  pote_salario_restante: 3150,
-  lucro_pessoal:         3150,
-}
