@@ -24,7 +24,7 @@ export default function AlertaGastos({ reservaUsadaEmpresa, reservaUsadaPessoal 
         )}
         {reservaUsadaPessoal > 0 && (
           <p className="text-gray-500 text-xs mt-0.5">
-            · {formatCurrency(reservaUsadaPessoal)} para cobrir seu salário
+            · {formatCurrency(reservaUsadaPessoal)} para cobrir seu pró-labore
           </p>
         )}
       </div>

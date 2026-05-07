@@ -36,8 +36,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  if (user && !isPublic) {
-    // MODO TESTE: redirects de onboarding e assinatura desativados
+  if (user && !isPublic && !isOnboarding) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('setup_completo')
+      .eq('id', user.id)
+      .single()
+
+    if (profile && !profile.setup_completo && path !== '/config') {
+      return NextResponse.redirect(new URL('/config', request.url))
+    }
   }
 
   return response

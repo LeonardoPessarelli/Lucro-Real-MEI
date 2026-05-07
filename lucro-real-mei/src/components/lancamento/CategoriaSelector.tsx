@@ -19,11 +19,11 @@ export default function CategoriaSelector({ tipo, selected, onSelect }: Props) {
     <div className="grid grid-cols-2 gap-3">
       <button onClick={() => setTipoGasto('empresa')} className="bg-[#1c1400] border-2 border-ambar rounded-2xl p-4 text-center">
         <p className="text-2xl mb-1">💼</p><p className="text-ambar font-bold text-sm">Empresa</p>
-        <p className="text-gray-500 text-xs mt-1">Sai do pote de Custos</p>
+        <p className="text-gray-500 text-xs mt-1">Sai do gráfico de Custos</p>
       </button>
       <button onClick={() => setTipoGasto('pessoal')} className="bg-card2 border-2 border-card2 rounded-2xl p-4 text-center">
         <p className="text-2xl mb-1">🏠</p><p className="text-gray-300 font-bold text-sm">Pessoal</p>
-        <p className="text-gray-500 text-xs mt-1">Sai do seu salário</p>
+        <p className="text-gray-500 text-xs mt-1">Sai do seu pró-labore</p>
       </button>
     </div>
   )

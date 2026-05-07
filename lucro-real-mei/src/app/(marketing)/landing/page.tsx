@@ -12,8 +12,8 @@ const metricas = [
 const features = [
   {
     icon: '🪣',
-    titulo: 'Divisão automática em potes',
-    desc: 'Cada entrada é dividida na hora entre Custos, Reserva e Salário conforme suas regras.',
+    titulo: 'Divisão automática em gráficos',
+    desc: 'Cada entrada é dividida na hora entre Custos, Reserva e Pró-labore conforme suas regras.',
   },
   {
     icon: '📊',
@@ -33,7 +33,7 @@ const features = [
   {
     icon: '🚨',
     titulo: 'Alertas de reserva',
-    desc: 'Notificação imediata quando seus gastos ultrapassam o pote e consomem a reserva.',
+    desc: 'Notificação imediata quando seus gastos ultrapassam o limite e consomem a reserva.',
   },
   {
     icon: '📈',
@@ -52,7 +52,7 @@ const planos = [
     features: [
       '1 membro',
       '50 leads no pipeline',
-      'Dashboard de potes',
+      'Dashboard de gráficos',
       'Lançamentos ilimitados',
     ],
     cta: 'Começar grátis',
@@ -113,7 +113,7 @@ function HeroSection() {
 
         <h1 className="hero-headline">
           Faturamento em{' '}
-          <span className="hero-accent">potes reais.</span>
+          <span className="hero-accent">gráficos reais.</span>
           <br />
           Sem planilha.{' '}
           <span className="hero-accent">Sem chute.</span>
@@ -121,7 +121,7 @@ function HeroSection() {
 
         <p className="hero-sub">
           Saiba quanto é realmente seu a cada serviço prestado.
-          {' '}Divisão automática em Custos, Reserva e Salário — em segundos.
+          {' '}Divisão automática em Custos, Reserva e Pró-labore — em segundos.
         </p>
 
         <div className="hero-actions">
