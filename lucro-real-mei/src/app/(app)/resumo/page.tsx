@@ -33,9 +33,9 @@ export default async function ResumoPage() {
         <p className="text-3xl font-black text-white">{formatCurrency(summary.total_entradas)}</p>
       </div>
       <div className="space-y-4">
-        <PoteBar icon="💼" label="Custos do negócio" value={summary.pote_custos_restante} total={summary.pote_custos} color="text-ambar" barColor="bg-ambar" />
-        <PoteBar icon="🏦" label="Reserva de oportunidade" value={summary.pote_reserva_restante} total={summary.pote_reserva} color="text-roxo" barColor="bg-roxo" />
-        <PoteBar icon="✅" label="Pró-labore" value={summary.pote_salario_restante} total={summary.pote_salario} color="text-verde" barColor="bg-verde" />
+        <PoteBar icon="💼" label="Custos do Negócio" value={summary.pote_custos_restante} total={summary.pote_custos} color="text-ambar" barColor="bg-ambar" />
+        <PoteBar icon="🏦" label="Reserva de Oportunidade" value={summary.pote_reserva_restante} total={summary.pote_reserva} color="text-roxo" barColor="bg-roxo" />
+        <PoteBar icon="✅" label="Pró-Labore" value={summary.pote_salario_restante} total={summary.pote_salario} color="text-verde" barColor="bg-verde" />
       </div>
       <AlertaGastos reservaUsadaEmpresa={summary.reserva_usada_empresa} reservaUsadaPessoal={summary.reserva_usada_pessoal} />
       <div>

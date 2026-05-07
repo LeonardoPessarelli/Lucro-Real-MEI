@@ -44,17 +44,17 @@ export default function MetricasFinanceiras({ financeiro }: Props) {
       </div>
       <div className="space-y-3 pt-1">
         <PoteRow
-          icon="💼" label="Custos do negócio"
+          icon="💼" label="Custos do Negócio"
           value={financeiro.pote_custos_restante} total={financeiro.pote_custos}
           color="text-[#f59e0b]" barColor="bg-[#f59e0b]"
         />
         <PoteRow
-          icon="🏦" label="Reserva de oportunidade"
+          icon="🏦" label="Reserva de Oportunidade"
           value={financeiro.pote_reserva_restante} total={financeiro.pote_reserva}
           color="text-[#818cf8]" barColor="bg-[#818cf8]"
         />
         <PoteRow
-          icon="✅" label="Pró-labore"
+          icon="✅" label="Pró-Labore"
           value={financeiro.pote_salario_restante} total={financeiro.pote_salario}
           color="text-[#4ade80]" barColor="bg-[#4ade80]"
         />

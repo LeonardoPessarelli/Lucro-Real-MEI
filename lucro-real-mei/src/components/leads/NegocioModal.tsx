@@ -1,30 +1,22 @@
 'use client'
-import { useForm, useController } from 'react-hook-form'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Lead, LeadEstagio } from '@/lib/leads'
 import { STAGE_ORDER, STAGE_CONFIG } from '@/lib/leads'
 
-// Converte "5.000,00" ou "5000,00" ou "5000" → número
-function parseBRL(raw: string): number {
-  // Remove pontos de milhar, substitui vírgula decimal por ponto
-  const clean = raw.replace(/\./g, '').replace(',', '.')
-  return parseFloat(clean) || 0
-}
-
-// Formata número → "5.000,00"
-function formatBRL(v: number): string {
-  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+function formatarCentavos(centavos: number): string {
+  return (centavos / 100).toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 }
 
 const schema = z.object({
   servico:     z.string().min(1, 'Título obrigatório'),
   nome:        z.string().min(1, 'Lead/empresa obrigatório'),
   contato:     z.string().min(1, 'Contato obrigatório'),
-  valor:       z.string().min(1, 'Informe um valor').refine(
-    v => parseBRL(v) >= 0,
-    { message: 'Valor inválido' }
-  ),
   responsavel: z.string().min(1, 'Responsável obrigatório'),
   origem:      z.string().min(1, 'Selecione a origem'),
   estagio:     z.enum(['novo', 'proposta', 'negociacao', 'ganho', 'perdido']),
@@ -43,6 +35,11 @@ interface Props {
   onDelete?: (id: string) => void
 }
 
+// lead.valor é em reais (ex: 5000.00) → centavos (ex: 500000)
+function reaisParaCentavos(v: number): number {
+  return Math.round(v * 100)
+}
+
 const ORIGENS = ['Instagram', 'LinkedIn', 'Indicação', 'Google', 'Site', 'Outro']
 
 export default function NegocioModal({
@@ -53,10 +50,14 @@ export default function NegocioModal({
   onSave,
   onDelete,
 }: Props) {
+  const [centavos, setCentavos] = useState(() =>
+    lead ? reaisParaCentavos(lead.valor) : 0
+  )
+  const [erroValor, setErroValor] = useState(false)
+
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -65,7 +66,6 @@ export default function NegocioModal({
           servico:     lead.servico,
           nome:        lead.nome,
           contato:     lead.contato,
-          valor:       formatBRL(lead.valor),
           responsavel: lead.responsavel,
           origem:      lead.origem,
           estagio:     lead.estagio,
@@ -76,7 +76,6 @@ export default function NegocioModal({
           servico:     '',
           nome:        '',
           contato:     '',
-          valor:       '',
           responsavel: 'Leo Pessarelli',
           origem:      '',
           estagio:     defaultEstagio,
@@ -85,14 +84,19 @@ export default function NegocioModal({
         },
   })
 
-  const { field: valorField } = useController({ name: 'valor', control })
+  function handleValor(e: React.ChangeEvent<HTMLInputElement>) {
+    const digitos = e.target.value.replace(/\D/g, '')
+    setCentavos(Math.min(Number(digitos) || 0, 9999999999))
+    setErroValor(false)
+  }
 
   function onSubmit(data: FormData) {
+    if (centavos <= 0) { setErroValor(true); return }
     onSave({
       servico:     data.servico,
       nome:        data.nome,
       contato:     data.contato,
-      valor:       parseBRL(data.valor),
+      valor:       centavos / 100,
       responsavel: data.responsavel,
       origem:      data.origem,
       estagio:     data.estagio as LeadEstagio,
@@ -149,17 +153,14 @@ export default function NegocioModal({
             <div className="modal-field w-32">
               <label className="modal-label">Valor (R$)</label>
               <input
-                {...valorField}
-                inputMode="decimal"
+                type="text"
+                inputMode="numeric"
                 placeholder="0,00"
+                value={centavos > 0 ? formatarCentavos(centavos) : ''}
+                onChange={handleValor}
                 className={inp}
-                onBlur={e => {
-                  const n = parseBRL(e.target.value)
-                  valorField.onChange(n > 0 ? formatBRL(n) : e.target.value)
-                  valorField.onBlur()
-                }}
               />
-              {errors.valor && <p className={err}>{errors.valor.message}</p>}
+              {erroValor && <p className={err}>Informe um valor</p>}
             </div>
           </div>
 
