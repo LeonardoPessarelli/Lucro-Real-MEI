@@ -1,34 +1,9 @@
 'use client'
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { MOCK_LEADS, STAGE_CONFIG, STAGE_ORDER, type Lead, type LeadEstagio } from '@/lib/leads'
-import LeadModal from '@/components/leads/LeadModal'
-
-const TIMELINE_MOCK: Record<LeadEstagio, { label: string; descricao: string; diasAtras: number }[]> = {
-  novo: [
-    { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 0 },
-  ],
-  proposta: [
-    { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 5 },
-    { label: 'Proposta enviada', descricao: 'Orçamento enviado por e-mail', diasAtras: 0 },
-  ],
-  negociacao: [
-    { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 8 },
-    { label: 'Proposta enviada', descricao: 'Orçamento enviado por e-mail', diasAtras: 3 },
-    { label: 'Em negociação', descricao: 'Revisando contrato e condições', diasAtras: 0 },
-  ],
-  ganho: [
-    { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 12 },
-    { label: 'Proposta enviada', descricao: 'Orçamento enviado por e-mail', diasAtras: 7 },
-    { label: 'Negócio ganho', descricao: 'Contrato assinado e pagamento confirmado', diasAtras: 0 },
-  ],
-  perdido: [
-    { label: 'Lead criado', descricao: 'Lead adicionado ao funil', diasAtras: 20 },
-    { label: 'Primeiro contato', descricao: 'Mensagem enviada via WhatsApp', diasAtras: 18 },
-    { label: 'Proposta enviada', descricao: 'Orçamento enviado por e-mail', diasAtras: 15 },
-    { label: 'Lead perdido', descricao: 'Sem resposta após follow-up', diasAtras: 0 },
-  ],
-}
+import { STAGE_CONFIG, STAGE_ORDER, type Lead } from '@/lib/leads'
+import { useLeads } from '@/hooks/useLeads'
+import NegocioModal from '@/components/leads/NegocioModal'
 
 function diasAtrasTexto(n: number) {
   if (n === 0) return 'hoje'
@@ -39,8 +14,12 @@ function diasAtrasTexto(n: number) {
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const [leads, setLeads] = useState(MOCK_LEADS)
+  const { leads, loading, updateLead, deleteLead } = useLeads()
   const [editando, setEditando] = useState(false)
+
+  if (loading) {
+    return <div className="px-4 pt-16 text-center"><p className="text-gray-500 text-sm">Carregando...</p></div>
+  }
 
   const lead = leads.find(l => l.id === id)
 
@@ -53,31 +32,30 @@ export default function LeadDetailPage() {
     )
   }
 
-  const currentLead = lead
-  const stage = STAGE_CONFIG[currentLead.estagio]
-  const timeline = TIMELINE_MOCK[currentLead.estagio]
-  const stageIndex = STAGE_ORDER.indexOf(currentLead.estagio)
+  const stage = STAGE_CONFIG[lead.estagio]
+  const stageIndex = STAGE_ORDER.indexOf(lead.estagio)
+  const diasCriado = Math.floor((Date.now() - new Date(lead.created_at).getTime()) / 86400000)
 
-  function handleSave(data: Omit<Lead, 'id' | 'created_at'>) {
-    setLeads(prev => prev.map(l => l.id === currentLead.id ? { ...l, ...data } : l))
+  async function handleSave(data: Omit<Lead, 'id' | 'created_at' | 'workspace_id'>) {
+    await updateLead(id, data)
+    setEditando(false)
   }
 
-  function handleDelete(deletedId: string) {
-    setLeads(prev => prev.filter(l => l.id !== deletedId))
+  async function handleDelete(deletedId: string) {
+    await deleteLead(deletedId)
     router.back()
   }
 
   return (
     <div className="pb-10">
-      {/* Hero do lead */}
       <div className="px-4 pt-6 pb-4" style={{ borderBottom: `2px solid ${stage.color}22` }}>
         <button onClick={() => router.back()} className="text-gray-500 text-sm mb-3 flex items-center gap-1">
           ← Leads
         </button>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h1 className="font-bold text-white text-lg leading-tight truncate">{currentLead.nome}</h1>
-            <p className="text-gray-400 text-sm mt-0.5">{currentLead.servico}</p>
+            <h1 className="font-bold text-white text-lg leading-tight truncate">{lead.nome}</h1>
+            <p className="text-gray-400 text-sm mt-0.5">{lead.servico}</p>
           </div>
           <span
             className="text-xs px-3 py-1 rounded-full font-semibold shrink-0 mt-0.5"
@@ -91,23 +69,25 @@ export default function LeadDetailPage() {
           <div className="bg-card2 rounded-xl px-3 py-2.5">
             <p className="text-gray-500 text-xs">Valor estimado</p>
             <p className="text-white font-bold text-sm mt-0.5">
-              {currentLead.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              {lead.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </p>
           </div>
           <div className="bg-card2 rounded-xl px-3 py-2.5">
             <p className="text-gray-500 text-xs">Origem</p>
-            <p className="text-white font-bold text-sm mt-0.5">{currentLead.origem}</p>
+            <p className="text-white font-bold text-sm mt-0.5">{lead.origem}</p>
           </div>
-          <div className="bg-card2 rounded-xl px-3 py-2.5 col-span-2">
-            <p className="text-gray-500 text-xs">Contato</p>
-            <p className="text-white font-bold text-sm mt-0.5">{currentLead.contato}</p>
-          </div>
+          {lead.contato && (
+            <div className="bg-card2 rounded-xl px-3 py-2.5 col-span-2">
+              <p className="text-gray-500 text-xs">Contato</p>
+              <p className="text-white font-bold text-sm mt-0.5">{lead.contato}</p>
+            </div>
+          )}
         </div>
 
-        {currentLead.anotacoes && (
+        {lead.anotacoes && (
           <div className="mt-3 bg-card2 rounded-xl px-3 py-2.5">
             <p className="text-gray-500 text-xs mb-1">Anotações</p>
-            <p className="text-gray-300 text-sm leading-relaxed">{currentLead.anotacoes}</p>
+            <p className="text-gray-300 text-sm leading-relaxed">{lead.anotacoes}</p>
           </div>
         )}
       </div>
@@ -117,8 +97,8 @@ export default function LeadDetailPage() {
         <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-3">Progresso no funil</p>
         <div className="flex items-center gap-0">
           {STAGE_ORDER.filter(s => s !== 'perdido').map((s, i) => {
-            const isActive = currentLead.estagio === 'perdido' ? false : i <= stageIndex
-            const isCurrent = currentLead.estagio !== 'perdido' && s === currentLead.estagio
+            const isActive = lead.estagio === 'perdido' ? false : i <= stageIndex
+            const isCurrent = lead.estagio !== 'perdido' && s === lead.estagio
             const cfg = STAGE_CONFIG[s]
             return (
               <div key={s} className="flex-1 flex items-center">
@@ -138,46 +118,30 @@ export default function LeadDetailPage() {
                 {i < STAGE_ORDER.filter(s => s !== 'perdido').length - 1 && (
                   <div
                     className="h-0.5 flex-1 -mt-4"
-                    style={{ backgroundColor: isActive && currentLead.estagio !== 'perdido' && i < stageIndex ? STAGE_CONFIG[STAGE_ORDER[i + 1]].color : '#1f2937' }}
+                    style={{ backgroundColor: isActive && lead.estagio !== 'perdido' && i < stageIndex ? STAGE_CONFIG[STAGE_ORDER[i + 1]].color : '#1f2937' }}
                   />
                 )}
               </div>
             )
           })}
         </div>
-        {currentLead.estagio === 'perdido' && (
+        {lead.estagio === 'perdido' && (
           <p className="text-center text-red-400 text-xs mt-3 font-medium">Lead marcado como perdido</p>
         )}
       </div>
 
-      {/* Timeline */}
+      {/* Criado há */}
       <div className="px-4 pt-6">
-        <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-4">Histórico de atividades</p>
+        <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-3">Histórico</p>
         <div className="relative">
-          {/* linha vertical */}
           <div className="absolute left-[7px] top-2 bottom-2 w-px bg-gray-800" />
-          <div className="space-y-5">
-            {timeline.map((item, idx) => {
-              const isLast = idx === timeline.length - 1
-              return (
-                <div key={idx} className="flex gap-4 items-start relative">
-                  <div
-                    className="w-3.5 h-3.5 rounded-full border-2 shrink-0 mt-0.5 z-10"
-                    style={{
-                      backgroundColor: isLast ? stage.color : '#1f2937',
-                      borderColor: isLast ? stage.color : '#374151',
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-white text-sm font-medium">{item.label}</p>
-                      <p className="text-gray-600 text-xs shrink-0">{diasAtrasTexto(item.diasAtras)}</p>
-                    </div>
-                    <p className="text-gray-500 text-xs mt-0.5">{item.descricao}</p>
-                  </div>
-                </div>
-              )
-            })}
+          <div className="flex gap-4 items-start">
+            <div className="w-3.5 h-3.5 rounded-full border-2 shrink-0 mt-0.5 z-10"
+              style={{ backgroundColor: stage.color, borderColor: stage.color }} />
+            <div>
+              <p className="text-white text-sm font-medium">Lead criado</p>
+              <p className="text-gray-500 text-xs mt-0.5">{diasAtrasTexto(diasCriado)}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -193,8 +157,9 @@ export default function LeadDetailPage() {
       </div>
 
       {editando && (
-        <LeadModal
-          lead={currentLead}
+        <NegocioModal
+          mode="edit"
+          lead={lead}
           onClose={() => setEditando(false)}
           onSave={handleSave}
           onDelete={handleDelete}

@@ -1,41 +1,55 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { MOCK_LEADS, type Lead, type LeadEstagio } from '@/lib/leads'
+import { type Lead, type LeadEstagio } from '@/lib/leads'
+import { useLeads } from '@/hooks/useLeads'
 import LeadCard from '@/components/leads/LeadCard'
 import StageFilter from '@/components/leads/StageFilter'
-import LeadModal from '@/components/leads/LeadModal'
+import NegocioModal from '@/components/leads/NegocioModal'
 import EmptyState from '@/components/ui/EmptyState'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default function LeadsPage() {
-  const router = useRouter()
-  const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS)
+  const { leads, loading, createLead, updateLead, deleteLead } = useLeads()
   const [filtro, setFiltro] = useState<LeadEstagio | 'todos'>('todos')
   const [busca, setBusca] = useState('')
-  const [editando, setEditando] = useState<Lead | null | 'novo'>(null)
+  const [modal, setModal] = useState<{ mode: 'new' } | { mode: 'edit'; lead: Lead } | null>(null)
 
   const filtered = leads
     .filter(l => filtro === 'todos' || l.estagio === filtro)
-    .filter(l => l.nome.toLowerCase().includes(busca.toLowerCase()) || l.servico.toLowerCase().includes(busca.toLowerCase()))
+    .filter(l =>
+      l.nome.toLowerCase().includes(busca.toLowerCase()) ||
+      l.servico.toLowerCase().includes(busca.toLowerCase())
+    )
 
-  function handleSave(data: Omit<Lead, 'id' | 'created_at'>) {
-    if (editando === 'novo') {
-      setLeads(prev => [{
-        ...data,
-        id: String(Date.now()),
-        created_at: new Date().toISOString(),
-      }, ...prev])
-    } else if (editando) {
-      setLeads(prev => prev.map(l => l.id === editando.id ? { ...l, ...data } : l))
+  async function handleSave(data: Omit<Lead, 'id' | 'created_at' | 'workspace_id'>) {
+    if (!modal) return
+    if (modal.mode === 'new') {
+      await createLead(data as Omit<Lead, 'id' | 'created_at'>)
+    } else {
+      await updateLead(modal.lead.id, data)
     }
+    setModal(null)
   }
 
-  function handleDelete(id: string) {
-    setLeads(prev => prev.filter(l => l.id !== id))
+  async function handleDelete(id: string) {
+    await deleteLead(id)
+    setModal(null)
   }
 
   return (
     <div className="px-4 pt-6 space-y-4 pb-8">
+      <PageHeader
+        title="Leads"
+        action={
+          <button
+            onClick={() => setModal({ mode: 'new' })}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-verde text-black text-xl font-bold leading-none"
+          >
+            +
+          </button>
+        }
+      />
+
       <div className="relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">🔍</span>
         <input
@@ -52,7 +66,9 @@ export default function LeadsPage() {
 
       <StageFilter selected={filtro} onChange={setFiltro} />
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <p className="text-gray-500 text-sm text-center pt-8">Carregando...</p>
+      ) : filtered.length === 0 ? (
         leads.length === 0 ? (
           <EmptyState
             icon="👥"
@@ -68,16 +84,18 @@ export default function LeadsPage() {
             <LeadCard
               key={lead.id}
               lead={lead}
-              onClick={() => router.push(`/leads/${lead.id}`)}
+              onClick={() => setModal({ mode: 'edit', lead })}
             />
           ))}
         </div>
       )}
 
-      {editando !== null && (
-        <LeadModal
-          lead={editando === 'novo' ? undefined : editando}
-          onClose={() => setEditando(null)}
+      {modal && (
+        <NegocioModal
+          mode={modal.mode}
+          lead={modal.mode === 'edit' ? modal.lead : undefined}
+          defaultEstagio="novo"
+          onClose={() => setModal(null)}
           onSave={handleSave}
           onDelete={handleDelete}
         />

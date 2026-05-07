@@ -1,15 +1,30 @@
 'use client'
-import { useForm } from 'react-hook-form'
+import { useForm, useController } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Lead, LeadEstagio } from '@/lib/leads'
 import { STAGE_ORDER, STAGE_CONFIG } from '@/lib/leads'
 
+// Converte "5.000,00" ou "5000,00" ou "5000" → número
+function parseBRL(raw: string): number {
+  // Remove pontos de milhar, substitui vírgula decimal por ponto
+  const clean = raw.replace(/\./g, '').replace(',', '.')
+  return parseFloat(clean) || 0
+}
+
+// Formata número → "5.000,00"
+function formatBRL(v: number): string {
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 const schema = z.object({
   servico:     z.string().min(1, 'Título obrigatório'),
   nome:        z.string().min(1, 'Lead/empresa obrigatório'),
   contato:     z.string().min(1, 'Contato obrigatório'),
-  valor:       z.string().min(1).refine(v => !isNaN(Number(v)) && Number(v) >= 0, { message: 'Valor inválido' }),
+  valor:       z.string().min(1, 'Informe um valor').refine(
+    v => parseBRL(v) >= 0,
+    { message: 'Valor inválido' }
+  ),
   responsavel: z.string().min(1, 'Responsável obrigatório'),
   origem:      z.string().min(1, 'Selecione a origem'),
   estagio:     z.enum(['novo', 'proposta', 'negociacao', 'ganho', 'perdido']),
@@ -24,7 +39,7 @@ interface Props {
   lead?: Lead
   defaultEstagio?: LeadEstagio
   onClose: () => void
-  onSave: (data: Omit<Lead, 'id' | 'created_at'>) => void
+  onSave: (data: Omit<Lead, 'id' | 'created_at' | 'workspace_id'>) => void
   onDelete?: (id: string) => void
 }
 
@@ -41,6 +56,7 @@ export default function NegocioModal({
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -49,7 +65,7 @@ export default function NegocioModal({
           servico:     lead.servico,
           nome:        lead.nome,
           contato:     lead.contato,
-          valor:       String(lead.valor),
+          valor:       formatBRL(lead.valor),
           responsavel: lead.responsavel,
           origem:      lead.origem,
           estagio:     lead.estagio,
@@ -69,12 +85,14 @@ export default function NegocioModal({
         },
   })
 
+  const { field: valorField } = useController({ name: 'valor', control })
+
   function onSubmit(data: FormData) {
     onSave({
       servico:     data.servico,
       nome:        data.nome,
       contato:     data.contato,
-      valor:       Number(data.valor),
+      valor:       parseBRL(data.valor),
       responsavel: data.responsavel,
       origem:      data.origem,
       estagio:     data.estagio as LeadEstagio,
@@ -131,12 +149,15 @@ export default function NegocioModal({
             <div className="modal-field w-32">
               <label className="modal-label">Valor (R$)</label>
               <input
-                {...register('valor')}
-                type="number"
-                min="0"
-                step="100"
-                placeholder="0"
+                {...valorField}
+                inputMode="decimal"
+                placeholder="0,00"
                 className={inp}
+                onBlur={e => {
+                  const n = parseBRL(e.target.value)
+                  valorField.onChange(n > 0 ? formatBRL(n) : e.target.value)
+                  valorField.onBlur()
+                }}
               />
               {errors.valor && <p className={err}>{errors.valor.message}</p>}
             </div>

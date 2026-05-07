@@ -2,12 +2,9 @@
 import { useState } from 'react'
 import type { Lead, LeadEstagio } from '@/lib/leads'
 import { STAGE_ORDER, STAGE_CONFIG } from '@/lib/leads'
+import { useLeads } from '@/hooks/useLeads'
 import KanbanColumn from './KanbanColumn'
 import NegocioModal from './NegocioModal'
-
-interface Props {
-  initialLeads: Lead[]
-}
 
 function StatBox({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: string }) {
   return (
@@ -19,13 +16,12 @@ function StatBox({ label, value, sub, accent }: { label: string; value: string; 
   )
 }
 
-export default function KanbanBoard({ initialLeads }: Props) {
-  const [leads, setLeads] = useState<Lead[]>(initialLeads)
+export default function KanbanBoard() {
+  const { leads, loading, createLead, updateLead, deleteLead, moveEstagio } = useLeads()
   const [modal, setModal] = useState<
     { mode: 'new'; estagio: LeadEstagio } | { mode: 'edit'; lead: Lead } | null
   >(null)
 
-  // ── Métricas ────────────────────────────────────────────────────────────────
   const abertos  = leads.filter(l => l.estagio !== 'perdido' && l.estagio !== 'ganho')
   const fechados = leads.filter(l => l.estagio === 'ganho')
   const totalAberto  = abertos.reduce((s, l) => s + l.valor, 0)
@@ -40,38 +36,23 @@ export default function KanbanBoard({ initialLeads }: Props) {
     return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
   }
 
-  // ── Mover lead para estágio anterior ou próximo ─────────────────────────────
-  function moverEstagio(id: string, direcao: 'subir' | 'descer') {
-    setLeads(prev => prev.map(l => {
-      if (l.id !== id) return l
-      const idx = STAGE_ORDER.indexOf(l.estagio)
-      const nextIdx = direcao === 'subir' ? idx - 1 : idx + 1
-      if (nextIdx < 0 || nextIdx >= STAGE_ORDER.length) return l
-      return { ...l, estagio: STAGE_ORDER[nextIdx] }
-    }))
-  }
-
-  // ── Modal callbacks ─────────────────────────────────────────────────────────
-  function handleSave(data: Omit<Lead, 'id' | 'created_at'>) {
+  async function handleSave(data: Omit<Lead, 'id' | 'created_at' | 'workspace_id'>) {
     if (!modal) return
     if (modal.mode === 'new') {
-      setLeads(prev => [
-        { ...data, id: String(Date.now()), created_at: new Date().toISOString() },
-        ...prev,
-      ])
+      await createLead({ ...data, estagio: modal.estagio ?? data.estagio } as Omit<Lead, 'id' | 'created_at'>)
     } else {
-      setLeads(prev => prev.map(l => l.id === modal.lead.id ? { ...l, ...data } : l))
+      await updateLead(modal.lead.id, data)
     }
+    setModal(null)
   }
 
-  function handleDelete(id: string) {
-    setLeads(prev => prev.filter(l => l.id !== id))
+  async function handleDelete(id: string) {
+    await deleteLead(id)
+    setModal(null)
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="pipeline-root">
-      {/* ── Header do pipeline ────────────────────────────────── */}
       <div className="pipeline-header">
         <div className="pipeline-header-stats">
           <StatBox
@@ -95,7 +76,6 @@ export default function KanbanBoard({ initialLeads }: Props) {
           />
         </div>
 
-        {/* Barra de progresso geral do pipeline */}
         <div className="pipeline-global-bar">
           {STAGE_ORDER.filter(s => s !== 'perdido').map(estagio => {
             const stageVal = leads.filter(l => l.estagio === estagio).reduce((s, l) => s + l.valor, 0)
@@ -123,24 +103,26 @@ export default function KanbanBoard({ initialLeads }: Props) {
         </button>
       </div>
 
-      {/* ── Colunas verticais ─────────────────────────────────── */}
-      <div className="px-4 pb-8 space-y-3 mt-2">
-        {STAGE_ORDER.map((estagio, i) => (
-          <KanbanColumn
-            key={estagio}
-            estagio={estagio}
-            leads={leads.filter(l => l.estagio === estagio)}
-            totalPipeline={totalAberto}
-            isFirst={i === 0}
-            isLast={i === STAGE_ORDER.length - 1}
-            onEdit={lead => setModal({ mode: 'edit', lead })}
-            onAddNew={est => setModal({ mode: 'new', estagio: est })}
-            onMover={moverEstagio}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <p className="text-gray-500 text-sm text-center py-12">Carregando...</p>
+      ) : (
+        <div className="px-4 pb-8 space-y-3 mt-2">
+          {STAGE_ORDER.map((estagio, i) => (
+            <KanbanColumn
+              key={estagio}
+              estagio={estagio}
+              leads={leads.filter(l => l.estagio === estagio)}
+              totalPipeline={totalAberto}
+              isFirst={i === 0}
+              isLast={i === STAGE_ORDER.length - 1}
+              onEdit={lead => setModal({ mode: 'edit', lead })}
+              onAddNew={est => setModal({ mode: 'new', estagio: est })}
+              onMover={moveEstagio}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* ── Modal ─────────────────────────────────────────────── */}
       {modal && (
         <NegocioModal
           mode={modal.mode}
