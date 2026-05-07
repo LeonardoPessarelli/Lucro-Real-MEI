@@ -3,68 +3,77 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { Lead, LeadEstagio } from '@/lib/leads'
 
-type CreateLeadInput = Omit<Lead, 'id' | 'user_id' | 'created_at' | 'updated_at'>
+type CreateLeadInput = Omit<Lead, 'id' | 'workspace_id' | 'created_at' | 'updated_at'>
 type UpdateLeadInput = Partial<CreateLeadInput>
 
-async function getUser() {
+async function getWorkspaceId(): Promise<{ supabase: Awaited<ReturnType<typeof createClient>>; workspaceId: string } | { error: string }> {
   const supabase = await createClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
-  if (error || !user) throw new Error('Não autenticado')
-  return { supabase, user }
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return { error: 'Não autenticado' }
+
+  const { data: member, error: mErr } = await supabase
+    .from('workspace_members')
+    .select('workspace_id')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
+
+  if (mErr || !member) return { error: 'Workspace não encontrado' }
+  return { supabase, workspaceId: member.workspace_id }
+}
+
+function revalidate() {
+  revalidatePath('/leads')
+  revalidatePath('/pipeline')
+  revalidatePath('/dashboard')
 }
 
 export async function createLeadAction(input: CreateLeadInput): Promise<{ data?: Lead; error?: string }> {
-  try {
-    const { supabase, user } = await getUser()
-    const { data, error } = await supabase
-      .from('leads')
-      .insert({ ...input, user_id: user.id })
-      .select()
-      .single()
-    if (error) return { error: 'Erro ao criar lead. Tente novamente.' }
-    revalidatePath('/leads')
-    revalidatePath('/pipeline')
-    revalidatePath('/dashboard')
-    return { data: data as Lead }
-  } catch {
-    return { error: 'Não autenticado' }
-  }
+  const ctx = await getWorkspaceId()
+  if ('error' in ctx) return { error: ctx.error }
+  const { supabase, workspaceId } = ctx
+
+  const { data, error } = await supabase
+    .from('leads')
+    .insert({ ...input, workspace_id: workspaceId })
+    .select()
+    .single()
+
+  if (error) return { error: 'Erro ao criar lead. Tente novamente.' }
+  revalidate()
+  return { data: data as Lead }
 }
 
 export async function updateLeadAction(id: string, input: UpdateLeadInput): Promise<{ error?: string }> {
-  try {
-    const { supabase, user } = await getUser()
-    const { error } = await supabase
-      .from('leads')
-      .update(input)
-      .eq('id', id)
-      .eq('user_id', user.id)
-    if (error) return { error: 'Erro ao atualizar lead.' }
-    revalidatePath('/leads')
-    revalidatePath('/pipeline')
-    revalidatePath('/dashboard')
-    return {}
-  } catch {
-    return { error: 'Não autenticado' }
-  }
+  const ctx = await getWorkspaceId()
+  if ('error' in ctx) return { error: ctx.error }
+  const { supabase, workspaceId } = ctx
+
+  const { error } = await supabase
+    .from('leads')
+    .update(input)
+    .eq('id', id)
+    .eq('workspace_id', workspaceId)
+
+  if (error) return { error: 'Erro ao atualizar lead.' }
+  revalidate()
+  return {}
 }
 
 export async function deleteLeadAction(id: string): Promise<{ error?: string }> {
-  try {
-    const { supabase, user } = await getUser()
-    const { error } = await supabase
-      .from('leads')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', user.id)
-    if (error) return { error: 'Erro ao excluir lead.' }
-    revalidatePath('/leads')
-    revalidatePath('/pipeline')
-    revalidatePath('/dashboard')
-    return {}
-  } catch {
-    return { error: 'Não autenticado' }
-  }
+  const ctx = await getWorkspaceId()
+  if ('error' in ctx) return { error: ctx.error }
+  const { supabase, workspaceId } = ctx
+
+  const { error } = await supabase
+    .from('leads')
+    .delete()
+    .eq('id', id)
+    .eq('workspace_id', workspaceId)
+
+  if (error) return { error: 'Erro ao excluir lead.' }
+  revalidate()
+  return {}
 }
 
 export async function moveLeadEstagioAction(id: string, estagio: LeadEstagio): Promise<{ error?: string }> {

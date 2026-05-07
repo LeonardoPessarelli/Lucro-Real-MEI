@@ -23,11 +23,22 @@ export default function LeadsPage() {
       setLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
+
+      const { data: member } = await supabase
+        .from('workspace_members')
+        .select('workspace_id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .single()
+
+      if (!member) { setLoading(false); return }
+
       const { data } = await supabase
         .from('leads')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('workspace_id', member.workspace_id)
         .order('created_at', { ascending: false })
+
       if (!cancelled) { setLeads((data ?? []) as Lead[]); setLoading(false) }
     }
     load()
@@ -41,12 +52,11 @@ export default function LeadsPage() {
 
   const visíveis = leads.filter(l => {
     const passaFiltro = filtro === 'todos' || l.estagio === filtro
-    const passaBusca = !busca || l.nome.toLowerCase().includes(busca.toLowerCase()) || l.servico.toLowerCase().includes(busca.toLowerCase())
+    const passaBusca = !busca
+      || l.nome.toLowerCase().includes(busca.toLowerCase())
+      || (l.servico ?? '').toLowerCase().includes(busca.toLowerCase())
     return passaFiltro && passaBusca
   })
-
-  function abrirNovo() { setEditando(undefined); setModalOpen(true) }
-  function abrirEdicao(lead: Lead) { setEditando(lead); setModalOpen(true) }
 
   function onSaved(lead: Lead) {
     startTransition(() => {
@@ -66,16 +76,15 @@ export default function LeadsPage() {
     <div className="px-4 pt-8 pb-28 space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">Leads</h1>
-        <button onClick={abrirNovo} className="bg-verde text-black text-sm font-bold px-4 py-2 rounded-xl">+ Novo</button>
+        <button onClick={() => { setEditando(undefined); setModalOpen(true) }}
+          className="bg-verde text-black text-sm font-bold px-4 py-2 rounded-xl">
+          + Novo
+        </button>
       </div>
 
-      <input
-        type="text"
-        value={busca}
-        onChange={e => setBusca(e.target.value)}
+      <input type="text" value={busca} onChange={e => setBusca(e.target.value)}
         placeholder="Buscar por nome ou serviço..."
-        className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600"
-      />
+        className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
 
       <StageFilter selected={filtro} onChange={setFiltro} counts={counts} />
 
@@ -92,18 +101,13 @@ export default function LeadsPage() {
       {!loading && (
         <div className="space-y-3">
           {visíveis.map(lead => (
-            <LeadCard key={lead.id} lead={lead} onClick={() => abrirEdicao(lead)} />
+            <LeadCard key={lead.id} lead={lead} onClick={() => { setEditando(lead); setModalOpen(true) }} />
           ))}
         </div>
       )}
 
       {modalOpen && (
-        <LeadModal
-          lead={editando}
-          onClose={() => setModalOpen(false)}
-          onSaved={onSaved}
-          onDeleted={onDeleted}
-        />
+        <LeadModal lead={editando} onClose={() => setModalOpen(false)} onSaved={onSaved} onDeleted={onDeleted} />
       )}
     </div>
   )

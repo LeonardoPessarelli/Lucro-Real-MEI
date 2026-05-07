@@ -31,9 +31,16 @@ export default function LeadCard({ lead, compact = false, onClick }: Props) {
             {cfg.label}
           </span>
         </div>
-        <p className="text-xs text-gray-400 truncate">💼 {lead.servico || '—'} · {lead.valor > 0 ? `R$ ${lead.valor.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}` : 'Sem valor'}</p>
+        {lead.servico && (
+          <p className="text-xs text-gray-400 truncate">💼 {lead.servico}</p>
+        )}
         {!compact && (
-          <p className="text-xs text-gray-500 mt-0.5 truncate">📍 {lead.origem || '—'} · {diasAtras(lead.created_at)}</p>
+          <p className="text-xs text-gray-500 mt-0.5 truncate">
+            {lead.origem ? `📍 ${lead.origem} · ` : ''}{diasAtras(lead.created_at)}
+          </p>
+        )}
+        {!compact && lead.prazo && (
+          <p className="text-xs text-ambar mt-0.5">⏰ Prazo: {new Date(lead.prazo).toLocaleDateString('pt-BR')}</p>
         )}
       </div>
     </button>

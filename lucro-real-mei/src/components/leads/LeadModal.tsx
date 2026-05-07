@@ -6,9 +6,10 @@ import { createLeadAction, updateLeadAction, deleteLeadAction } from '@/lib/acti
 type FormData = {
   nome: string
   contato: string
-  valor: string
   origem: string
   servico: string
+  responsavel: string
+  prazo: string
   anotacoes: string
   estagio: LeadEstagio
 }
@@ -20,40 +21,40 @@ interface Props {
   onDeleted?: (id: string) => void
 }
 
-const EMPTY: FormData = { nome: '', contato: '', valor: '', origem: 'Instagram', servico: '', anotacoes: '', estagio: 'novo' }
+const EMPTY: FormData = {
+  nome: '', contato: '', origem: 'Instagram', servico: '',
+  responsavel: '', prazo: '', anotacoes: '', estagio: 'novo',
+}
 
 export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) {
   const isEdit = !!lead
   const [form, setForm] = useState<FormData>(
-    lead ? { nome: lead.nome, contato: lead.contato, valor: lead.valor > 0 ? String(lead.valor) : '', origem: lead.origem, servico: lead.servico, anotacoes: lead.anotacoes ?? '', estagio: lead.estagio } : EMPTY
+    lead ? {
+      nome: lead.nome, contato: lead.contato ?? '', origem: lead.origem ?? 'Instagram',
+      servico: lead.servico ?? '', responsavel: lead.responsavel ?? '',
+      prazo: lead.prazo ?? '', anotacoes: lead.anotacoes ?? '', estagio: lead.estagio,
+    } : EMPTY
   )
   const [erro, setErro] = useState('')
   const [isPending, startTransition] = useTransition()
 
   function set(key: keyof FormData, value: string) { setForm(f => ({ ...f, [key]: value })) }
 
-  function validar(): string | null {
-    if (!form.nome.trim()) return 'Nome é obrigatório'
-    if (!form.contato.trim()) return 'Contato é obrigatório'
-    if (!form.servico.trim()) return 'Serviço é obrigatório'
-    const v = parseFloat(form.valor.replace(',', '.'))
-    if (form.valor && (isNaN(v) || v < 0)) return 'Valor inválido'
-    return null
-  }
-
   function salvar() {
-    const err = validar()
-    if (err) { setErro(err); return }
+    if (!form.nome.trim()) { setErro('Nome é obrigatório'); return }
     setErro('')
+
     const payload = {
       nome: form.nome.trim(),
-      contato: form.contato.trim(),
-      valor: form.valor ? parseFloat(form.valor.replace(',', '.')) : 0,
-      origem: form.origem,
-      servico: form.servico.trim(),
+      contato: form.contato.trim() || null,
+      origem: form.origem || null,
+      servico: form.servico.trim() || null,
+      responsavel: form.responsavel.trim() || null,
+      prazo: form.prazo || null,
       anotacoes: form.anotacoes.trim() || null,
       estagio: form.estagio,
     }
+
     startTransition(async () => {
       if (isEdit) {
         const { error } = await updateLeadAction(lead!.id, payload)
@@ -96,20 +97,14 @@ export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) 
         </div>
 
         <div>
-          <p className="text-gray-500 text-xs mb-1">Contato *</p>
+          <p className="text-gray-500 text-xs mb-1">Contato</p>
           <input value={form.contato} onChange={e => set('contato', e.target.value)} placeholder="WhatsApp, e-mail ou telefone"
             className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
         </div>
 
         <div>
-          <p className="text-gray-500 text-xs mb-1">Serviço de interesse *</p>
+          <p className="text-gray-500 text-xs mb-1">Serviço de interesse</p>
           <input value={form.servico} onChange={e => set('servico', e.target.value)} placeholder="Ex: Design de logo"
-            className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
-        </div>
-
-        <div>
-          <p className="text-gray-500 text-xs mb-1">Valor estimado (R$)</p>
-          <input value={form.valor} onChange={e => set('valor', e.target.value)} placeholder="0,00" inputMode="decimal"
             className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
         </div>
 
@@ -127,6 +122,19 @@ export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) 
               className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none">
               {STAGE_ORDER.map(s => <option key={s} value={s}>{STAGE_CONFIG[s].label}</option>)}
             </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <p className="text-gray-500 text-xs mb-1">Responsável</p>
+            <input value={form.responsavel} onChange={e => set('responsavel', e.target.value)} placeholder="Seu nome"
+              className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
+          </div>
+          <div>
+            <p className="text-gray-500 text-xs mb-1">Prazo</p>
+            <input type="date" value={form.prazo} onChange={e => set('prazo', e.target.value)}
+              className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none" />
           </div>
         </div>
 

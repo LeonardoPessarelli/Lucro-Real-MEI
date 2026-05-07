@@ -25,10 +25,10 @@ export default async function DashboardPage() {
 
   const inicio = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
 
-  const [{ data: profile }, { data: transactions }, { data: leads }] = await Promise.all([
+  const [{ data: profile }, { data: transactions }, { data: member }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('transactions').select('*').eq('user_id', user.id).gte('created_at', inicio),
-    supabase.from('leads').select('*').eq('user_id', user.id),
+    supabase.from('workspace_members').select('workspace_id').eq('user_id', user.id).limit(1).single(),
   ])
 
   if (!profile?.setup_completo) redirect('/config')
@@ -36,17 +36,20 @@ export default async function DashboardPage() {
   const config = { custos_pct: profile.pote_custos_pct, reserva_pct: profile.pote_reserva_pct, salario_pct: profile.pote_salario_pct }
   const summary = calcularPotes(transactions ?? [], config)
 
-  const leadsTyped = (leads ?? []) as Lead[]
-  const leadsAtivos = leadsTyped.filter(l => l.estagio !== 'perdido' && l.estagio !== 'fechado')
-  const leadsFechados = leadsTyped.filter(l => l.estagio === 'fechado')
-  const valorPipeline = leadsAtivos.reduce((s, l) => s + l.valor, 0)
-  const valorFechado = leadsFechados.reduce((s, l) => s + l.valor, 0)
-  const taxaFechamento = leadsTyped.length > 0
-    ? Math.round((leadsFechados.length / leadsTyped.length) * 100)
+  let leads: Lead[] = []
+  if (member) {
+    const { data } = await supabase.from('leads').select('*').eq('workspace_id', member.workspace_id)
+    leads = (data ?? []) as Lead[]
+  }
+
+  const leadsAtivos = leads.filter(l => l.estagio !== 'perdido' && l.estagio !== 'ganho')
+  const leadsGanhos = leads.filter(l => l.estagio === 'ganho')
+  const taxaFechamento = leads.length > 0
+    ? Math.round((leadsGanhos.length / leads.length) * 100)
     : 0
 
   const countsPorEstagio = STAGE_ORDER.reduce((acc, e) => {
-    acc[e] = leadsTyped.filter(l => l.estagio === e).length
+    acc[e] = leads.filter(l => l.estagio === e).length
     return acc
   }, {} as Record<LeadEstagio, number>)
 
@@ -67,10 +70,10 @@ export default async function DashboardPage() {
       <section className="space-y-2">
         <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Pipeline de leads</p>
         <div className="grid grid-cols-2 gap-3">
-          <MetricCard label="Valor em pipeline" value={`R$ ${fmt(valorPipeline)}`} sub={`${leadsAtivos.length} lead${leadsAtivos.length !== 1 ? 's' : ''} ativos`} />
-          <MetricCard label="Valor fechado total" value={`R$ ${fmt(valorFechado)}`} sub={`${leadsFechados.length} fechado${leadsFechados.length !== 1 ? 's' : ''}`} color="text-verde" />
-          <MetricCard label="Total de leads" value={String(leadsTyped.length)} />
-          <MetricCard label="Taxa de fechamento" value={`${taxaFechamento}%`} color={taxaFechamento >= 30 ? 'text-verde' : 'text-ambar'} />
+          <MetricCard label="Total de leads" value={String(leads.length)} />
+          <MetricCard label="Em negociação" value={String(leadsAtivos.length)} sub="ativos no pipeline" />
+          <MetricCard label="Ganhos" value={String(leadsGanhos.length)} color="text-verde" />
+          <MetricCard label="Taxa de ganho" value={`${taxaFechamento}%`} color={taxaFechamento >= 30 ? 'text-verde' : 'text-ambar'} />
         </div>
       </section>
 
@@ -79,7 +82,7 @@ export default async function DashboardPage() {
         <div className="bg-card2 rounded-2xl p-4 space-y-3">
           {STAGE_ORDER.map(estagio => {
             const count = countsPorEstagio[estagio]
-            const pct = leadsTyped.length > 0 ? (count / leadsTyped.length) * 100 : 0
+            const pct = leads.length > 0 ? (count / leads.length) * 100 : 0
             const cfg = STAGE_CONFIG[estagio]
             return (
               <div key={estagio}>

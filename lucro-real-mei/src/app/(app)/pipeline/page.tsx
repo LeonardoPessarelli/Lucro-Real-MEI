@@ -8,13 +8,19 @@ export default async function PipelinePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data } = await supabase
+  const { data: member } = await supabase
+    .from('workspace_members')
+    .select('workspace_id')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
+
+  const leads: Lead[] = member ? (await supabase
     .from('leads')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('workspace_id', member.workspace_id)
     .order('created_at', { ascending: false })
-
-  const leads = (data ?? []) as Lead[]
+  ).data as Lead[] ?? [] : []
 
   return (
     <div className="pt-8 pb-28">
