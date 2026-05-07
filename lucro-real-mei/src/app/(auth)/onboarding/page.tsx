@@ -34,7 +34,7 @@ export default function OnboardingPage() {
       setErroGlobal(result.error)
       return
     }
-    router.push('/')
+    router.replace('/')
   }
 
   return (

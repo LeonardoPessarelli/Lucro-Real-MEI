@@ -11,7 +11,7 @@ import {
   X,
   TrendingUp,
 } from 'lucide-react'
-import WorkspaceSwitcher from './WorkspaceSwitcher'
+import WorkspaceSwitcher, { type WorkspaceItem } from './WorkspaceSwitcher'
 import LogoutButton from '@/components/ui/LogoutButton'
 
 const NAV_ITEMS = [
@@ -21,7 +21,12 @@ const NAV_ITEMS = [
   { href: '/config',       label: 'Configurações', icon: Settings        },
 ]
 
-function SidebarContent({ onNav }: { onNav?: () => void }) {
+interface SidebarProps {
+  workspaces: WorkspaceItem[]
+  activeWorkspaceId: string
+}
+
+function SidebarContent({ workspaces, activeWorkspaceId, onNav }: SidebarProps & { onNav?: () => void }) {
   const pathname = usePathname()
 
   return (
@@ -36,7 +41,7 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
 
       {/* Workspace switcher */}
       <div className="px-3 py-3 border-b border-border">
-        <WorkspaceSwitcher />
+        <WorkspaceSwitcher workspaces={workspaces} activeId={activeWorkspaceId} />
       </div>
 
       {/* Nav */}
@@ -70,16 +75,16 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
 }
 
 /* ── Desktop sidebar (fixo, visível em lg+) ── */
-export function DesktopSidebar() {
+export function DesktopSidebar({ workspaces, activeWorkspaceId }: SidebarProps) {
   return (
     <aside className="hidden lg:flex flex-col w-60 shrink-0 bg-sidebar border-r border-border h-screen sticky top-0">
-      <SidebarContent />
+      <SidebarContent workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
     </aside>
   )
 }
 
 /* ── Mobile sidebar (Sheet hamburguer) ── */
-export function MobileSidebar() {
+export function MobileSidebar({ workspaces, activeWorkspaceId }: SidebarProps) {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -118,7 +123,7 @@ export function MobileSidebar() {
         >
           <X size={18} />
         </button>
-        <SidebarContent onNav={() => setOpen(false)} />
+        <SidebarContent workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} onNav={() => setOpen(false)} />
       </div>
     </>
   )
