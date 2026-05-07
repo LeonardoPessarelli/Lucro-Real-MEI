@@ -51,10 +51,10 @@ export async function proxy(request: NextRequest) {
     .eq('id', user.id)
     .single()
 
-  // Sem setup: forçar /config (exceto se já está lá ou em /onboarding)
+  // Sem setup: forçar /onboarding (exceto se já está lá)
   if (profile && !profile.setup_completo) {
-    if (path !== '/config' && path !== '/onboarding') {
-      return NextResponse.redirect(new URL('/config', request.url))
+    if (path !== '/onboarding') {
+      return NextResponse.redirect(new URL('/onboarding', request.url))
     }
     return response
   }
