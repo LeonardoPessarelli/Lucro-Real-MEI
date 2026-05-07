@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Lead, LeadEstagio } from '@/lib/leads'
+import { revalidateHome } from '@/app/actions'
 
 export type LeadsState = {
   leads: Lead[]
@@ -93,6 +94,7 @@ export function useLeads(): LeadsState {
   }, [workspaceId])
 
   const updateLead = useCallback(async (id: string, data: Partial<Omit<Lead, 'id' | 'created_at'>>) => {
+    const prev_lead = leads.find(l => l.id === id)
     const { data: row, error: e } = await supabase
       .from('leads')
       .update(data)
@@ -101,7 +103,11 @@ export function useLeads(): LeadsState {
       .single()
     if (e) throw e
     setLeads(prev => prev.map(l => l.id === id ? rowToLead(row) : l))
-  }, [])
+    // Revalida o Início se o estágio ganho foi afetado
+    if (data.estagio !== undefined && (data.estagio === 'ganho' || prev_lead?.estagio === 'ganho')) {
+      await revalidateHome()
+    }
+  }, [leads])
 
   const deleteLead = useCallback(async (id: string) => {
     const { error: e } = await supabase.from('leads').delete().eq('id', id)
@@ -115,7 +121,12 @@ export function useLeads(): LeadsState {
     const idx = STAGE_ORDER.indexOf(lead.estagio)
     const nextIdx = direcao === 'subir' ? idx - 1 : idx + 1
     if (nextIdx < 0 || nextIdx >= STAGE_ORDER.length) return
-    await updateLead(id, { estagio: STAGE_ORDER[nextIdx] })
+    const nextEstagio = STAGE_ORDER[nextIdx]
+    await updateLead(id, { estagio: nextEstagio })
+    // Revalida o Início sempre que ganho entra ou sai do cálculo
+    if (lead.estagio === 'ganho' || nextEstagio === 'ganho') {
+      await revalidateHome()
+    }
   }, [leads, updateLead])
 
   return { leads, loading, error, createLead, updateLead, deleteLead, moveEstagio }

@@ -5,7 +5,7 @@ export default function DivisaoPreview({ valor, custos_pct, reserva_pct, salario
   const items = [
     { label: 'Custos (empresa)', pct: custos_pct, color: 'text-ambar', icon: '💼' },
     { label: 'Reserva', pct: reserva_pct, color: 'text-roxo', icon: '🏦' },
-    { label: 'Pró-labore', pct: salario_pct, color: 'text-verde', icon: '✅' },
+    { label: 'Pró-Labore', pct: salario_pct, color: 'text-verde', icon: '✅' },
   ]
   return (
     <div className="bg-card2 rounded-2xl p-4 space-y-2">
