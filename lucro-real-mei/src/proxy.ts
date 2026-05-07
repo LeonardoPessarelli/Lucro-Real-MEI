@@ -25,26 +25,56 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
-  const isPublic = path.startsWith('/login') || path.startsWith('/api/') || path.startsWith('/landing')
-  const isOnboarding = path === '/onboarding'
+  const isPublicPath =
+    path.startsWith('/login') ||
+    path.startsWith('/landing') ||
+    path.startsWith('/api/auth/') ||
+    path.startsWith('/api/webhooks/')
 
-  if (!user && !isPublic && !isOnboarding) {
+  // Sem sessão: só rotas públicas são permitidas
+  if (!user) {
+    if (isPublicPath) return response
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && path === '/login') {
+  // Com sessão: redireciona /login para /
+  if (path.startsWith('/login')) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  if (user && !isPublic && !isOnboarding) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('setup_completo')
-      .eq('id', user.id)
+  // Rotas públicas passam sem verificação adicional
+  if (isPublicPath) return response
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('setup_completo')
+    .eq('id', user.id)
+    .single()
+
+  // Sem setup: forçar /config (exceto se já está lá ou em /onboarding)
+  if (profile && !profile.setup_completo) {
+    if (path !== '/config' && path !== '/onboarding') {
+      return NextResponse.redirect(new URL('/config', request.url))
+    }
+    return response
+  }
+
+  // Setup completo: verificar trial/assinatura (exceto em /assinatura)
+  if (path !== '/assinatura') {
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('status, trial_ends_at')
+      .eq('user_id', user.id)
       .single()
 
-    if (profile && !profile.setup_completo && path !== '/config') {
-      return NextResponse.redirect(new URL('/config', request.url))
+    if (subscription) {
+      const trialExpirado =
+        subscription.status === 'trial' &&
+        new Date(subscription.trial_ends_at) < new Date()
+
+      if (trialExpirado || subscription.status === 'expired') {
+        return NextResponse.redirect(new URL('/assinatura', request.url))
+      }
     }
   }
 
