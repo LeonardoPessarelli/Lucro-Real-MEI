@@ -8,15 +8,20 @@ interface Props {
 }
 
 export default function StageFilter({ selected, onChange, counts }: Props) {
-  const all = [{ key: 'todos' as const, label: 'Todos' }, ...STAGE_ORDER.map(e => ({ key: e, label: STAGE_CONFIG[e].label }))]
+  const options = [
+    { key: 'todos' as const, label: 'Todos', color: null },
+    ...STAGE_ORDER.map(e => ({ key: e, label: STAGE_CONFIG[e].label, color: STAGE_CONFIG[e].color })),
+  ]
   return (
-    <div className="flex flex-wrap gap-2">
-      {all.map(({ key, label }) => {
+    <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+      {options.map(({ key, label, color }) => {
         const active = selected === key
-        const count = key !== 'todos' ? counts?.[key] : undefined
+        const count = key !== 'todos' ? counts?.[key as LeadEstagio] : undefined
         return (
           <button key={key} onClick={() => onChange(key)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${active ? 'bg-verde text-black' : 'bg-card2 text-gray-400'}`}>
+            style={active && color ? { background: color + '33', color, borderColor: color } : {}}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border whitespace-nowrap
+              ${active && !color ? 'bg-verde/20 text-verde border-verde' : !active ? 'bg-card2 text-gray-400 border-transparent' : 'border'}`}>
             {label}{count !== undefined ? ` ${count}` : ''}
           </button>
         )

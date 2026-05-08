@@ -3,8 +3,8 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { Lead, LeadEstagio } from '@/lib/leads'
 
-type CreateLeadInput = Omit<Lead, 'id' | 'workspace_id' | 'created_at' | 'updated_at'>
-type UpdateLeadInput = Partial<CreateLeadInput>
+type CreateLeadInput = Omit<Lead, 'id' | 'workspace_id' | 'created_at' | 'updated_at' | 'ganho_em' | 'lancamento_criado'>
+type UpdateLeadInput = Partial<Omit<Lead, 'id' | 'workspace_id' | 'created_at' | 'updated_at'>>
 
 async function getWorkspaceId(): Promise<{ supabase: Awaited<ReturnType<typeof createClient>>; workspaceId: string } | { error: string }> {
   const supabase = await createClient()
@@ -77,5 +77,19 @@ export async function deleteLeadAction(id: string): Promise<{ error?: string }> 
 }
 
 export async function moveLeadEstagioAction(id: string, estagio: LeadEstagio): Promise<{ error?: string }> {
-  return updateLeadAction(id, { estagio })
+  const ctx = await getWorkspaceId()
+  if ('error' in ctx) return { error: ctx.error }
+  const { supabase, workspaceId } = ctx
+
+  const { data: lead } = await supabase
+    .from('leads')
+    .select('lancamento_criado')
+    .eq('id', id)
+    .eq('workspace_id', workspaceId)
+    .single()
+
+  if (lead?.lancamento_criado) return { error: 'Este lead já foi confirmado como lançamento e não pode ser movido.' }
+
+  const extra = estagio === 'ganho' ? { ganho_em: new Date().toISOString() } : { ganho_em: null }
+  return updateLeadAction(id, { estagio, ...extra })
 }

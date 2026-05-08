@@ -3,12 +3,17 @@ import { useState, useTransition } from 'react'
 import { STAGE_ORDER, STAGE_CONFIG, ORIGENS, type Lead, type LeadEstagio } from '@/lib/leads'
 import { createLeadAction, updateLeadAction, deleteLeadAction } from '@/lib/actions/leads'
 
+function formatarCentavos(centavos: number): string {
+  return (centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 type FormData = {
   nome: string
+  colaborador: string
   contato: string
   origem: string
   servico: string
-  valor: string
+  valorCentavos: number
   responsavel: string
   prazo: string
   anotacoes: string
@@ -23,16 +28,16 @@ interface Props {
 }
 
 const EMPTY: FormData = {
-  nome: '', contato: '', origem: 'Instagram', servico: '',
-  valor: '', responsavel: '', prazo: '', anotacoes: '', estagio: 'novo',
+  nome: '', colaborador: '', contato: '', origem: 'Instagram', servico: '',
+  valorCentavos: 0, responsavel: '', prazo: '', anotacoes: '', estagio: 'novo',
 }
 
 export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) {
   const isEdit = !!lead
   const [form, setForm] = useState<FormData>(
     lead ? {
-      nome: lead.nome, contato: lead.contato ?? '', origem: lead.origem ?? 'Instagram',
-      servico: lead.servico ?? '', valor: lead.valor != null ? String(lead.valor) : '',
+      nome: lead.nome, colaborador: lead.colaborador ?? '', contato: lead.contato ?? '', origem: lead.origem ?? 'Instagram',
+      servico: lead.servico ?? '', valorCentavos: lead.valor != null ? Math.round(lead.valor * 100) : 0,
       responsavel: lead.responsavel ?? '', prazo: lead.prazo ?? '',
       anotacoes: lead.anotacoes ?? '', estagio: lead.estagio,
     } : EMPTY
@@ -48,10 +53,11 @@ export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) 
 
     const payload = {
       nome: form.nome.trim(),
+      colaborador: form.colaborador.trim() || null,
       contato: form.contato.trim() || null,
       origem: form.origem || null,
       servico: form.servico.trim() || null,
-      valor: form.valor ? parseFloat(form.valor.replace(',', '.')) : null,
+      valor: form.valorCentavos > 0 ? form.valorCentavos / 100 : null,
       responsavel: form.responsavel.trim() || null,
       prazo: form.prazo || null,
       anotacoes: form.anotacoes.trim() || null,
@@ -100,6 +106,12 @@ export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) 
         </div>
 
         <div>
+          <p className="text-gray-500 text-xs mb-1">Colaborador</p>
+          <input value={form.colaborador} onChange={e => set('colaborador', e.target.value)} placeholder="Nome do colaborador"
+            className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
+        </div>
+
+        <div>
           <p className="text-gray-500 text-xs mb-1">Contato</p>
           <input value={form.contato} onChange={e => set('contato', e.target.value)} placeholder="WhatsApp, e-mail ou telefone"
             className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
@@ -113,8 +125,12 @@ export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) 
           </div>
           <div>
             <p className="text-gray-500 text-xs mb-1">Valor estimado R$</p>
-            <input type="number" min="0" step="0.01" value={form.valor} onChange={e => set('valor', e.target.value)} placeholder="0,00"
-              className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
+            <input inputMode="numeric" value={formatarCentavos(form.valorCentavos)}
+              onChange={e => {
+                const digitos = e.target.value.replace(/\D/g, '')
+                setForm(f => ({ ...f, valorCentavos: Math.min(Number(digitos) || 0, 99999999) }))
+              }}
+              className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none" />
           </div>
         </div>
 

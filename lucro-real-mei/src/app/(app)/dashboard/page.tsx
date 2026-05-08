@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { calcularPotes } from '@/lib/potes'
+import { calcularPotesComLeads } from '@/lib/potes'
 import type { Lead, LeadEstagio } from '@/lib/leads'
 import { STAGE_CONFIG, STAGE_ORDER } from '@/lib/leads'
 
@@ -34,13 +34,18 @@ export default async function DashboardPage() {
   if (!profile?.setup_completo) redirect('/config')
 
   const config = { custos_pct: profile.pote_custos_pct, reserva_pct: profile.pote_reserva_pct, salario_pct: profile.pote_salario_pct }
-  const summary = calcularPotes(transactions ?? [], config)
 
   let leads: Lead[] = []
+  let totalLeadsGanhosPendentes = 0
   if (member) {
     const { data } = await supabase.from('leads').select('*').eq('workspace_id', member.workspace_id)
     leads = (data ?? []) as Lead[]
+    totalLeadsGanhosPendentes = leads
+      .filter(l => l.estagio === 'ganho' && !l.lancamento_criado)
+      .reduce((s, l) => s + (l.valor ?? 0), 0)
   }
+
+  const summary = calcularPotesComLeads(transactions ?? [], config, totalLeadsGanhosPendentes)
 
   const leadsAtivos = leads.filter(l => l.estagio !== 'perdido' && l.estagio !== 'ganho')
   const leadsGanhos = leads.filter(l => l.estagio === 'ganho')
@@ -59,11 +64,19 @@ export default async function DashboardPage() {
 
       <section className="space-y-2">
         <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Financeiro — mês atual</p>
+        {totalLeadsGanhosPendentes > 0 && (
+          <div className="bg-verde/10 border border-verde/20 rounded-2xl px-4 py-2.5 flex items-center gap-2">
+            <span className="text-verde text-sm">🏆</span>
+            <p className="text-xs font-bold text-verde">R$ {fmt(totalLeadsGanhosPendentes)} em leads ganhos incluídos</p>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-3">
-          <MetricCard label="Entradas" value={`R$ ${fmt(summary.total_entradas)}`} color="text-verde" />
+          <MetricCard label="Total recebido" value={`R$ ${fmt(summary.total_entradas)}`} color="text-verde" sub={totalLeadsGanhosPendentes > 0 ? 'inclui leads ganhos' : undefined} />
           <MetricCard label="Saídas" value={`R$ ${fmt(summary.total_saidas)}`} color="text-vermelho" />
-          <MetricCard label="Lucro pessoal" value={`R$ ${fmt(summary.lucro_pessoal)}`} color="text-verde" />
-          <MetricCard label="Reserva restante" value={`R$ ${fmt(summary.pote_reserva_restante)}`} color="text-roxo" />
+          <MetricCard label="💼 Custos" value={`R$ ${fmt(summary.pote_custos_restante)}`} color="text-ambar" />
+          <MetricCard label="🏦 Reserva" value={`R$ ${fmt(summary.pote_reserva_restante)}`} color="text-roxo" />
+          <MetricCard label="💰 Pró-labore" value={`R$ ${fmt(summary.lucro_pessoal)}`} color="text-verde" />
+          <MetricCard label="Taxa de ganho" value={`${leads.length > 0 ? Math.round((leads.filter(l => l.estagio === 'ganho').length / leads.length) * 100) : 0}%`} color="text-ambar" />
         </div>
       </section>
 
