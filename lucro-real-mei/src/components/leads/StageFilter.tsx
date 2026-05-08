@@ -10,7 +10,7 @@ interface Props {
 export default function StageFilter({ selected, onChange, counts }: Props) {
   const all = [{ key: 'todos' as const, label: 'Todos' }, ...STAGE_ORDER.map(e => ({ key: e, label: STAGE_CONFIG[e].label }))]
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+    <div className="flex flex-wrap gap-2">
       {all.map(({ key, label }) => {
         const active = selected === key
         const count = key !== 'todos' ? counts?.[key] : undefined

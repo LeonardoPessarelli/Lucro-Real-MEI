@@ -9,7 +9,7 @@ export default function BottomNav() {
   const [showModal, setShowModal] = useState(false)
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card border-t border-card2 px-2 py-3 flex items-center justify-around z-40">
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card border-t border-card2 px-0 py-3 flex items-center justify-evenly z-40">
         <Link href="/" className={`flex flex-col items-center gap-1 text-xs ${pathname === '/' ? 'text-verde' : 'text-gray-500'}`}>
           <span className="text-lg">🏠</span>Início
         </Link>

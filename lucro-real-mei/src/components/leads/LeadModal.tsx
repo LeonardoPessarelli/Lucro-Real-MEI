@@ -8,6 +8,7 @@ type FormData = {
   contato: string
   origem: string
   servico: string
+  valor: string
   responsavel: string
   prazo: string
   anotacoes: string
@@ -23,7 +24,7 @@ interface Props {
 
 const EMPTY: FormData = {
   nome: '', contato: '', origem: 'Instagram', servico: '',
-  responsavel: '', prazo: '', anotacoes: '', estagio: 'novo',
+  valor: '', responsavel: '', prazo: '', anotacoes: '', estagio: 'novo',
 }
 
 export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) {
@@ -31,8 +32,9 @@ export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) 
   const [form, setForm] = useState<FormData>(
     lead ? {
       nome: lead.nome, contato: lead.contato ?? '', origem: lead.origem ?? 'Instagram',
-      servico: lead.servico ?? '', responsavel: lead.responsavel ?? '',
-      prazo: lead.prazo ?? '', anotacoes: lead.anotacoes ?? '', estagio: lead.estagio,
+      servico: lead.servico ?? '', valor: lead.valor != null ? String(lead.valor) : '',
+      responsavel: lead.responsavel ?? '', prazo: lead.prazo ?? '',
+      anotacoes: lead.anotacoes ?? '', estagio: lead.estagio,
     } : EMPTY
   )
   const [erro, setErro] = useState('')
@@ -49,6 +51,7 @@ export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) 
       contato: form.contato.trim() || null,
       origem: form.origem || null,
       servico: form.servico.trim() || null,
+      valor: form.valor ? parseFloat(form.valor.replace(',', '.')) : null,
       responsavel: form.responsavel.trim() || null,
       prazo: form.prazo || null,
       anotacoes: form.anotacoes.trim() || null,
@@ -102,10 +105,17 @@ export default function LeadModal({ lead, onClose, onSaved, onDeleted }: Props) 
             className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
         </div>
 
-        <div>
-          <p className="text-gray-500 text-xs mb-1">Serviço de interesse</p>
-          <input value={form.servico} onChange={e => set('servico', e.target.value)} placeholder="Ex: Design de logo"
-            className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <p className="text-gray-500 text-xs mb-1">Serviço de interesse</p>
+            <input value={form.servico} onChange={e => set('servico', e.target.value)} placeholder="Ex: Design de logo"
+              className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
+          </div>
+          <div>
+            <p className="text-gray-500 text-xs mb-1">Valor estimado R$</p>
+            <input type="number" min="0" step="0.01" value={form.valor} onChange={e => set('valor', e.target.value)} placeholder="0,00"
+              className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">

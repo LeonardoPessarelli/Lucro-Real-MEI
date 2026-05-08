@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import KanbanBoard from '@/components/leads/KanbanBoard'
+import PipelineClient from '@/components/leads/PipelineClient'
 import type { Lead } from '@/lib/leads'
 
 export default async function PipelinePage() {
@@ -23,12 +23,12 @@ export default async function PipelinePage() {
   ).data as Lead[] ?? [] : []
 
   return (
-    <div className="pt-8 pb-28">
-      <div className="px-4 mb-4 flex justify-between items-center">
+    <div className="px-4 pt-8 pb-28">
+      <div className="mb-4 flex justify-between items-center">
         <h1 className="text-xl font-bold">Pipeline</h1>
         <p className="text-xs text-gray-500">{leads.length} lead{leads.length !== 1 ? 's' : ''}</p>
       </div>
-      <KanbanBoard initialLeads={leads} />
+      <PipelineClient initialLeads={leads} />
     </div>
   )
 }

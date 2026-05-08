@@ -7,6 +7,7 @@ export interface Lead {
   contato: string | null
   origem: string | null
   servico: string | null
+  valor: number | null
   anotacoes: string | null
   estagio: LeadEstagio
   responsavel: string | null

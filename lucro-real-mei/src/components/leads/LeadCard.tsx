@@ -15,6 +15,10 @@ function diasAtras(dateStr: string): string {
   return `há ${dias} dias`
 }
 
+function fmtValor(v: number) {
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 export default function LeadCard({ lead, compact = false, onClick }: Props) {
   const cfg = STAGE_CONFIG[lead.estagio]
   return (
@@ -31,8 +35,11 @@ export default function LeadCard({ lead, compact = false, onClick }: Props) {
             {cfg.label}
           </span>
         </div>
-        {lead.servico && (
-          <p className="text-xs text-gray-400 truncate">💼 {lead.servico}</p>
+        {(lead.servico || lead.valor != null) && (
+          <p className="text-xs text-gray-400 truncate">
+            💼 {lead.servico}{lead.servico && lead.valor != null ? ' · ' : ''}
+            {lead.valor != null ? `R$ ${fmtValor(lead.valor)}` : ''}
+          </p>
         )}
         {!compact && (
           <p className="text-xs text-gray-500 mt-0.5 truncate">
