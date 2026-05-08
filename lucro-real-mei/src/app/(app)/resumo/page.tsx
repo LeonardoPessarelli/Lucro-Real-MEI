@@ -18,7 +18,8 @@ export default async function ResumoPage() {
   ])
 
   const config = { custos_pct: profile?.pote_custos_pct ?? 40, reserva_pct: profile?.pote_reserva_pct ?? 20, salario_pct: profile?.pote_salario_pct ?? 40 }
-  const summary = calcularPotes(transactions ?? [], config)
+  const txList = transactions ?? []
+  const summary = calcularPotes(txList, config)
   const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
 
   return (
@@ -32,14 +33,14 @@ export default async function ResumoPage() {
         <p className="text-3xl font-black text-white">{formatCurrency(summary.total_entradas)}</p>
       </div>
       <div className="space-y-4">
-        <PoteBar icon="💼" label="Custos do negócio" value={summary.pote_custos_restante} total={summary.pote_custos} color="text-ambar" barColor="bg-ambar" />
-        <PoteBar icon="🏦" label="Reserva de oportunidade" value={summary.pote_reserva_restante} total={summary.pote_reserva} color="text-roxo" barColor="bg-roxo" />
-        <PoteBar icon="✅" label="Pró-labore" value={summary.pote_salario_restante} total={summary.pote_salario} color="text-verde" barColor="bg-verde" />
+        <PoteBar icon="💼" label="Custos do Negócio" value={summary.pote_custos_restante} total={summary.pote_custos} color="text-ambar" barColor="bg-ambar" />
+        <PoteBar icon="🏦" label="Reserva de Oportunidade" value={summary.pote_reserva_restante} total={summary.pote_reserva} color="text-roxo" barColor="bg-roxo" />
+        <PoteBar icon="✅" label="Pró-Labore" value={summary.pote_salario_restante} total={summary.pote_salario} color="text-verde" barColor="bg-verde" />
       </div>
       <AlertaGastos reservaUsadaEmpresa={summary.reserva_usada_empresa} reservaUsadaPessoal={summary.reserva_usada_pessoal} />
       <div>
         <p className="text-gray-300 text-xs font-semibold uppercase tracking-wider mb-3">Todos os lançamentos</p>
-        <TransactionList transactions={transactions ?? []} />
+        <TransactionList transactions={txList} />
       </div>
     </div>
   )

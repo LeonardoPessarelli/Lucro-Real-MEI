@@ -14,7 +14,7 @@ export async function sendWelcomeEmail(email: string, nome: string) {
         <p>Você tem <strong>7 dias grátis</strong> para descobrir quanto você realmente ganha.</p>
         <h3>Próximos passos:</h3>
         <ol>
-          <li>Configure seus potes (quanto % vai para custos, reserva e salário)</li>
+          <li>Configure seus gráficos (quanto % vai para custos, reserva e pró-labore)</li>
           <li>Registre seu próximo serviço</li>
           <li>Veja seu lucro real na tela inicial</li>
         </ol>

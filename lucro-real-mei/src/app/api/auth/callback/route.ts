@@ -55,7 +55,7 @@ export async function GET(request: Request) {
       // non-critical, não bloqueia o onboarding
     }
 
-    return NextResponse.redirect(new URL('/config', origin))
+    return NextResponse.redirect(new URL('/onboarding', origin))
   }
 
   return NextResponse.redirect(new URL('/', origin))

@@ -1,31 +1,32 @@
-'use client'
-import { STAGE_ORDER, STAGE_CONFIG, type LeadEstagio } from '@/lib/leads'
+import type { LeadEstagio } from '@/lib/leads'
+import { STAGE_CONFIG, STAGE_ORDER } from '@/lib/leads'
 
 interface Props {
   selected: LeadEstagio | 'todos'
   onChange: (v: LeadEstagio | 'todos') => void
-  counts?: Partial<Record<LeadEstagio, number>>
 }
 
-export default function StageFilter({ selected, onChange, counts }: Props) {
-  const options = [
-    { key: 'todos' as const, label: 'Todos', color: null },
-    ...STAGE_ORDER.map(e => ({ key: e, label: STAGE_CONFIG[e].label, color: STAGE_CONFIG[e].color })),
+export default function StageFilter({ selected, onChange }: Props) {
+  const chips: { value: LeadEstagio | 'todos'; label: string }[] = [
+    { value: 'todos', label: 'Todos' },
+    ...STAGE_ORDER.map(s => ({ value: s, label: STAGE_CONFIG[s].label })),
   ]
+
   return (
-    <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
-      {options.map(({ key, label, color }) => {
-        const active = selected === key
-        const count = key !== 'todos' ? counts?.[key as LeadEstagio] : undefined
-        return (
-          <button key={key} onClick={() => onChange(key)}
-            style={active && color ? { background: color + '33', color, borderColor: color } : {}}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border whitespace-nowrap
-              ${active && !color ? 'bg-verde/20 text-verde border-verde' : !active ? 'bg-card2 text-gray-400 border-transparent' : 'border'}`}>
-            {label}{count !== undefined ? ` ${count}` : ''}
-          </button>
-        )
-      })}
+    <div className="flex gap-1.5 flex-wrap">
+      {chips.map(({ value, label }) => (
+        <button
+          key={value}
+          onClick={() => onChange(value)}
+          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors ${
+            selected === value
+              ? 'bg-verde text-black'
+              : 'bg-card2 text-gray-400'
+          }`}
+        >
+          {label}
+        </button>
+      ))}
     </div>
   )
 }

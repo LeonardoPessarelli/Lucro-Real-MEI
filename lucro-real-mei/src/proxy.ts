@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -12,9 +12,7 @@ export async function proxy(request: NextRequest) {
       cookies: {
         getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
@@ -27,41 +25,51 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
-  const isPublic = path.startsWith('/login') || path.startsWith('/api/')
+  const isPublicPath =
+    path.startsWith('/login') ||
+    path.startsWith('/landing') ||
+    path.startsWith('/api/auth/') ||
+    path.startsWith('/api/webhooks/')
 
-  if (!user && !isPublic) {
+  if (!user) {
+    if (isPublicPath) return response
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && path === '/login') {
+  if (path.startsWith('/login')) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  if (user && !isPublic) {
-    const { data: sub } = await supabase
+  if (isPublicPath) return response
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('setup_completo')
+    .eq('id', user.id)
+    .single()
+
+  if (profile && !profile.setup_completo) {
+    if (path !== '/onboarding') {
+      return NextResponse.redirect(new URL('/onboarding', request.url))
+    }
+    return response
+  }
+
+  if (path !== '/assinatura') {
+    const { data: subscription } = await supabase
       .from('subscriptions')
       .select('status, trial_ends_at')
       .eq('user_id', user.id)
       .single()
 
-    // Subscription ausente = race condition no primeiro login (trigger ainda rodando).
-    // Deixa passar para /config e /assinatura; bloqueia o restante.
-    if (!sub) {
-      if (path !== '/config' && path !== '/assinatura') {
-        return NextResponse.redirect(new URL('/config', request.url))
+    if (subscription) {
+      const trialExpirado =
+        subscription.status === 'trial' &&
+        new Date(subscription.trial_ends_at) < new Date()
+
+      if (trialExpirado || subscription.status === 'expired') {
+        return NextResponse.redirect(new URL('/assinatura', request.url))
       }
-      return response
-    }
-
-    const trialExpired = sub.status === 'trial' && new Date(sub.trial_ends_at) < new Date()
-    const needsPayment = trialExpired || sub.status === 'expired'
-
-    if (needsPayment && path !== '/assinatura') {
-      return NextResponse.redirect(new URL('/assinatura', request.url))
-    }
-
-    if (sub.status === 'active' && path === '/assinatura') {
-      return NextResponse.redirect(new URL('/', request.url))
     }
   }
 

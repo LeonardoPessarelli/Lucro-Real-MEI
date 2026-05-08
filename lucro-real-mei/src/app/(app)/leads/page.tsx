@@ -1,113 +1,104 @@
 'use client'
-import { useState, useEffect, useTransition } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useState } from 'react'
+import { type Lead, type LeadEstagio } from '@/lib/leads'
+import { useLeads } from '@/hooks/useLeads'
 import LeadCard from '@/components/leads/LeadCard'
-import LeadModal from '@/components/leads/LeadModal'
 import StageFilter from '@/components/leads/StageFilter'
-import type { Lead, LeadEstagio } from '@/lib/leads'
-import { STAGE_ORDER } from '@/lib/leads'
+import NegocioModal from '@/components/leads/NegocioModal'
+import EmptyState from '@/components/ui/EmptyState'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default function LeadsPage() {
-  const supabase = createClient()
-  const [leads, setLeads] = useState<Lead[]>([])
-  const [loading, setLoading] = useState(true)
+  const { leads, loading, createLead, updateLead, deleteLead } = useLeads()
   const [filtro, setFiltro] = useState<LeadEstagio | 'todos'>('todos')
   const [busca, setBusca] = useState('')
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editando, setEditando] = useState<Lead | undefined>()
-  const [, startTransition] = useTransition()
+  const [modal, setModal] = useState<{ mode: 'new' } | { mode: 'edit'; lead: Lead } | null>(null)
 
-  useEffect(() => {
-    let cancelled = false
-    async function load() {
-      setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setLoading(false); return }
+  const filtered = leads
+    .filter(l => filtro === 'todos' || l.estagio === filtro)
+    .filter(l =>
+      l.nome.toLowerCase().includes(busca.toLowerCase()) ||
+      l.servico.toLowerCase().includes(busca.toLowerCase())
+    )
 
-      const { data: member } = await supabase
-        .from('workspace_members')
-        .select('workspace_id')
-        .eq('user_id', user.id)
-        .limit(1)
-        .single()
-
-      if (!member) { setLoading(false); return }
-
-      const { data } = await supabase
-        .from('leads')
-        .select('*')
-        .eq('workspace_id', member.workspace_id)
-        .order('created_at', { ascending: false })
-
-      if (!cancelled) { setLeads((data ?? []) as Lead[]); setLoading(false) }
+  async function handleSave(data: Omit<Lead, 'id' | 'created_at' | 'workspace_id'>) {
+    if (!modal) return
+    if (modal.mode === 'new') {
+      await createLead(data as Omit<Lead, 'id' | 'created_at'>)
+    } else {
+      await updateLead(modal.lead.id, data)
     }
-    load()
-    return () => { cancelled = true }
-  }, [])
-
-  const counts = STAGE_ORDER.reduce((acc, e) => {
-    acc[e] = leads.filter(l => l.estagio === e).length
-    return acc
-  }, {} as Record<LeadEstagio, number>)
-
-  const visíveis = leads.filter(l => {
-    const passaFiltro = filtro === 'todos' || l.estagio === filtro
-    const passaBusca = !busca
-      || l.nome.toLowerCase().includes(busca.toLowerCase())
-      || (l.servico ?? '').toLowerCase().includes(busca.toLowerCase())
-    return passaFiltro && passaBusca
-  })
-
-  function onSaved(lead: Lead) {
-    startTransition(() => {
-      setLeads(prev => {
-        const idx = prev.findIndex(l => l.id === lead.id)
-        if (idx >= 0) { const next = [...prev]; next[idx] = lead; return next }
-        return [lead, ...prev]
-      })
-    })
+    setModal(null)
   }
 
-  function onDeleted(id: string) {
-    startTransition(() => setLeads(prev => prev.filter(l => l.id !== id)))
+  async function handleDelete(id: string) {
+    await deleteLead(id)
+    setModal(null)
   }
 
   return (
-    <div className="px-4 pt-8 pb-28 space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">Leads</h1>
-        <button onClick={() => { setEditando(undefined); setModalOpen(true) }}
-          className="bg-verde text-black text-sm font-bold px-4 py-2 rounded-xl">
-          + Novo
-        </button>
+    <div className="px-4 pt-6 space-y-4 pb-8">
+      <PageHeader
+        title="Leads"
+        action={
+          <button
+            onClick={() => setModal({ mode: 'new' })}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-verde text-black text-xl font-bold leading-none"
+          >
+            +
+          </button>
+        }
+      />
+
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">🔍</span>
+        <input
+          type="text"
+          value={busca}
+          onChange={e => setBusca(e.target.value)}
+          placeholder="Buscar por nome ou serviço..."
+          className="w-full bg-card2 rounded-xl pl-9 pr-4 py-3 text-sm text-gray-300 outline-none placeholder:text-gray-600"
+        />
+        {busca && (
+          <button onClick={() => setBusca('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">✕</button>
+        )}
       </div>
 
-      <input type="text" value={busca} onChange={e => setBusca(e.target.value)}
-        placeholder="Buscar por nome ou serviço..."
-        className="w-full bg-card2 rounded-xl px-4 py-3 text-sm text-gray-100 outline-none placeholder:text-gray-600" />
+      <StageFilter selected={filtro} onChange={setFiltro} />
 
-      <StageFilter selected={filtro} onChange={setFiltro} counts={counts} />
-
-      {loading && <p className="text-gray-500 text-sm text-center py-8">Carregando...</p>}
-
-      {!loading && visíveis.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-sm">
-            {busca || filtro !== 'todos' ? 'Nenhum lead encontrado.' : 'Nenhum lead ainda. Toque em + para adicionar.'}
-          </p>
-        </div>
-      )}
-
-      {!loading && (
+      {loading ? (
+        <p className="text-gray-500 text-sm text-center pt-8">Carregando...</p>
+      ) : filtered.length === 0 ? (
+        leads.length === 0 ? (
+          <EmptyState
+            icon="👥"
+            title="Nenhum lead ainda"
+            description="Toque em + para adicionar seu primeiro lead."
+          />
+        ) : (
+          <p className="text-gray-500 text-sm text-center pt-8">Nenhum lead encontrado</p>
+        )
+      ) : (
         <div className="space-y-3">
-          {visíveis.map(lead => (
-            <LeadCard key={lead.id} lead={lead} onClick={() => { setEditando(lead); setModalOpen(true) }} />
+          {filtered.map(lead => (
+            <LeadCard
+              key={lead.id}
+              lead={lead}
+              onClick={() => setModal({ mode: 'edit', lead })}
+            />
           ))}
         </div>
       )}
 
-      {modalOpen && (
-        <LeadModal lead={editando} onClose={() => setModalOpen(false)} onSaved={onSaved} onDeleted={onDeleted} />
+      {modal && (
+        <NegocioModal
+          mode={modal.mode}
+          lead={modal.mode === 'edit' ? modal.lead : undefined}
+          defaultEstagio="novo"
+          onClose={() => setModal(null)}
+          onSave={handleSave}
+          onDelete={handleDelete}
+        />
       )}
     </div>
   )
