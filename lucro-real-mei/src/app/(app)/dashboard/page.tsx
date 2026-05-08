@@ -1,76 +1,116 @@
-'use client'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { calcularPotesComLeads } from '@/lib/potes'
+import type { Lead, LeadEstagio } from '@/lib/leads'
+import { STAGE_CONFIG, STAGE_ORDER } from '@/lib/leads'
 
-import { useState } from 'react'
-import PageHeader from '@/components/ui/PageHeader'
-import MetricCards from '@/components/dashboard/MetricCards'
-import MetricasFinanceiras from '@/components/dashboard/MetricasFinanceiras'
-import PipelineSnapshot from '@/components/dashboard/PipelineSnapshot'
-import HistoricoFaturamento from '@/components/dashboard/HistoricoFaturamento'
-import NegociosPrazo from '@/components/dashboard/NegociosPrazo'
-import {
-  calcularMetricasLeads,
-  type MesHistorico,
-  type FinanceiroMes,
-} from '@/lib/dashboard-mock'
-
-const HISTORICO_VAZIO: MesHistorico[] = []
-const FINANCEIRO_VAZIO: FinanceiroMes = {
-  total_entradas: 0,
-  pote_custos: 0,
-  pote_reserva: 0,
-  pote_salario: 0,
-  pote_custos_restante: 0,
-  pote_reserva_restante: 0,
-  pote_salario_restante: 0,
-  lucro_pessoal: 0,
+function fmt(v: number) {
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-type Tab = 'overview' | 'historico'
+function MetricCard({ label, value, sub, color = 'text-gray-100' }: { label: string; value: string; sub?: string; color?: string }) {
+  return (
+    <div className="bg-card2 rounded-2xl p-4">
+      <p className="text-gray-500 text-xs mb-1">{label}</p>
+      <p className={`text-2xl font-bold ${color}`}>{value}</p>
+      {sub && <p className="text-gray-500 text-xs mt-0.5">{sub}</p>}
+    </div>
+  )
+}
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'overview',  label: 'Visão Geral' },
-  { id: 'historico', label: 'Histórico'   },
-]
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('overview')
-  const metricas = calcularMetricasLeads([])
+  const inicio = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+
+  const [{ data: profile }, { data: transactions }, { data: member }] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('transactions').select('*').eq('user_id', user.id).gte('created_at', inicio),
+    supabase.from('workspace_members').select('workspace_id').eq('user_id', user.id).limit(1).single(),
+  ])
+
+  if (!profile?.setup_completo) redirect('/config')
+
+  const config = { custos_pct: profile.pote_custos_pct, reserva_pct: profile.pote_reserva_pct, salario_pct: profile.pote_salario_pct }
+
+  let leads: Lead[] = []
+  let totalLeadsGanhosPendentes = 0
+  if (member) {
+    const { data } = await supabase.from('leads').select('*').eq('workspace_id', member.workspace_id)
+    leads = (data ?? []) as Lead[]
+    totalLeadsGanhosPendentes = leads
+      .filter(l => l.estagio === 'ganho' && !l.lancamento_criado)
+      .reduce((s, l) => s + (l.valor ?? 0), 0)
+  }
+
+  const summary = calcularPotesComLeads(transactions ?? [], config, totalLeadsGanhosPendentes)
+
+  const leadsAtivos = leads.filter(l => l.estagio !== 'perdido' && l.estagio !== 'ganho')
+  const leadsGanhos = leads.filter(l => l.estagio === 'ganho')
+  const taxaFechamento = leads.length > 0
+    ? Math.round((leadsGanhos.length / leads.length) * 100)
+    : 0
+
+  const countsPorEstagio = STAGE_ORDER.reduce((acc, e) => {
+    acc[e] = leads.filter(l => l.estagio === e).length
+    return acc
+  }, {} as Record<LeadEstagio, number>)
 
   return (
-    <div className="px-4 pt-8 space-y-5">
-      <PageHeader title="Dashboard" />
+    <div className="px-4 pt-8 pb-28 space-y-6">
+      <h1 className="text-xl font-bold">Dashboard</h1>
 
-      {/* tabs */}
-      <div className="flex gap-6 border-b border-[#1a1a1a]">
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={[
-              'pb-2 text-sm font-medium border-b-2 transition-colors',
-              activeTab === tab.id
-                ? 'border-[#4ade80] text-white'
-                : 'border-transparent text-gray-400',
-            ].join(' ')}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* conteúdo */}
-      {activeTab === 'overview' && (
-        <div className="space-y-4">
-          <MetricCards metricas={metricas} />
-          <MetricasFinanceiras financeiro={FINANCEIRO_VAZIO} />
-          <PipelineSnapshot leads={[]} />
-          <NegociosPrazo leads={[]} />
+      <section className="space-y-2">
+        <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Financeiro — mês atual</p>
+        {totalLeadsGanhosPendentes > 0 && (
+          <div className="bg-verde/10 border border-verde/20 rounded-2xl px-4 py-2.5 flex items-center gap-2">
+            <span className="text-verde text-sm">🏆</span>
+            <p className="text-xs font-bold text-verde">R$ {fmt(totalLeadsGanhosPendentes)} em leads ganhos incluídos</p>
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-3">
+          <MetricCard label="Total recebido" value={`R$ ${fmt(summary.total_entradas)}`} color="text-verde" sub={totalLeadsGanhosPendentes > 0 ? 'inclui leads ganhos' : undefined} />
+          <MetricCard label="Saídas" value={`R$ ${fmt(summary.total_saidas)}`} color="text-vermelho" />
+          <MetricCard label="💼 Custos" value={`R$ ${fmt(summary.pote_custos_restante)}`} color="text-ambar" />
+          <MetricCard label="🏦 Reserva" value={`R$ ${fmt(summary.pote_reserva_restante)}`} color="text-roxo" />
+          <MetricCard label="💰 Pró-labore" value={`R$ ${fmt(summary.lucro_pessoal)}`} color="text-verde" />
+          <MetricCard label="Taxa de ganho" value={`${leads.length > 0 ? Math.round((leads.filter(l => l.estagio === 'ganho').length / leads.length) * 100) : 0}%`} color="text-ambar" />
         </div>
-      )}
+      </section>
 
-      {activeTab === 'historico' && (
-        <HistoricoFaturamento historico={HISTORICO_VAZIO} />
-      )}
+      <section className="space-y-2">
+        <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Pipeline de leads</p>
+        <div className="grid grid-cols-2 gap-3">
+          <MetricCard label="Total de leads" value={String(leads.length)} />
+          <MetricCard label="Em negociação" value={String(leadsAtivos.length)} sub="ativos no pipeline" />
+          <MetricCard label="Ganhos" value={String(leadsGanhos.length)} color="text-verde" />
+          <MetricCard label="Taxa de ganho" value={`${taxaFechamento}%`} color={taxaFechamento >= 30 ? 'text-verde' : 'text-ambar'} />
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Leads por estágio</p>
+        <div className="bg-card2 rounded-2xl p-4 space-y-3">
+          {STAGE_ORDER.map(estagio => {
+            const count = countsPorEstagio[estagio]
+            const pct = leads.length > 0 ? (count / leads.length) * 100 : 0
+            const cfg = STAGE_CONFIG[estagio]
+            return (
+              <div key={estagio}>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-gray-400">{cfg.label}</span>
+                  <span className="text-gray-500">{count}</span>
+                </div>
+                <div className="h-1.5 bg-card rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: cfg.color }} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
     </div>
   )
 }

@@ -2,6 +2,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { createTransactionAction } from '@/lib/actions/transactions'
 import CategoriaSelector from './CategoriaSelector'
 import DivisaoPreview from './DivisaoPreview'
 import type { TipoGasto } from '@/types'
@@ -47,14 +48,8 @@ export default function LancamentoModal({ onClose }: Props) {
     if (!categoria || valor <= 0) return
     setErroSalvar('')
     startTransition(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-      const { error } = await supabase.from('transactions').insert({
-        user_id: session.user.id, tipo, valor, categoria,
-        tipo_gasto: tipo === 'saida' ? tipoGasto : null,
-        descricao: descricao || null,
-      })
-      if (error) { setErroSalvar('Erro ao salvar. Tente novamente.'); return }
+      const result = await createTransactionAction({ tipo, valor, categoria, tipo_gasto: tipoGasto, descricao: descricao || null })
+      if (result.error) { setErroSalvar(result.error); return }
       router.refresh(); onClose()
     })
   }

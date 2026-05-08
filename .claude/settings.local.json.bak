@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-Content \"c:\\\\Users\\\\leoh2\\\\OneDrive\\\\Área de Trabalho\\\\Trabalhos do Leo\\\\ClaudeCode\\\\lucro-real-mei\\\\.next\\\\dev\\\\logs\\\\next-development.log\" -Tail 50)",
+      "Bash(xargs grep -l \"distDir\\\\|outputDir\\\\|build.*dir\")",
+      "Bash(mkdir -p \"/c/Dev/next-cache/lucro-real-mei\" && echo \"Pasta criada\")",
+      "Bash(node -e \"require\\('@dnd-kit/core'\\); console.log\\('node_modules OK'\\)\")",
+      "Bash(node -e \"require\\('@dnd-kit/core'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e \"require\\('@tailwindcss/postcss'\\); console.log\\('OK'\\)\")",
+      "Bash(Move-Item .claude/settings.local.json .claude/settings.local.json.bak)"
+    ],
+    "additionalDirectories": [
+      "C:\\Dev\\next-cache"
+    ]
+  }
+}

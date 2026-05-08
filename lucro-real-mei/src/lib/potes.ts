@@ -72,3 +72,25 @@ export function formatCurrency(value: number): string {
     currency: 'BRL',
   }).format(value)
 }
+
+export function calcularPotesComLeads(
+  transactions: TransactionInput[],
+  config: PotesConfig,
+  totalLeadsGanhos: number
+): PotesSummary {
+  const base = calcularPotes(transactions, config)
+  const extra_custos = (totalLeadsGanhos * config.custos_pct) / 100
+  const extra_reserva = (totalLeadsGanhos * config.reserva_pct) / 100
+  const extra_salario = (totalLeadsGanhos * config.salario_pct) / 100
+  return {
+    ...base,
+    total_entradas: base.total_entradas + totalLeadsGanhos,
+    pote_custos: base.pote_custos + extra_custos,
+    pote_reserva: base.pote_reserva + extra_reserva,
+    pote_salario: base.pote_salario + extra_salario,
+    pote_custos_restante: base.pote_custos_restante + extra_custos,
+    pote_reserva_restante: base.pote_reserva_restante + extra_reserva,
+    pote_salario_restante: base.pote_salario_restante + extra_salario,
+    lucro_pessoal: base.lucro_pessoal + extra_salario,
+  }
+}
