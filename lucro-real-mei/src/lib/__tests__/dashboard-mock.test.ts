@@ -8,6 +8,7 @@ const makeLeads = (estagios: Lead['estagio'][]): Lead[] =>
     id: String(i),
     workspace_id: 'ws-test',
     nome: `Lead ${i}`,
+    colaborador: null,
     contato: '',
     valor: 1000,
     origem: 'Site',
@@ -16,22 +17,25 @@ const makeLeads = (estagios: Lead['estagio'][]): Lead[] =>
     estagio,
     responsavel: '',
     prazo: null,
+    ganho_em: null,
+    lancamento_criado: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   }))
 
 describe('calcularMetricasLeads', () => {
   it('conta total de leads', () => {
-    const leads = makeLeads(['novo', 'proposta', 'ganho'])
+    const leads = makeLeads(['novo', 'negociacao', 'ganho'])
     expect(calcularMetricasLeads(leads).totalLeads).toBe(3)
   })
 
-  it('conta negócios abertos (novo + proposta + negociacao)', () => {
-    const leads = makeLeads(['novo', 'proposta', 'negociacao', 'ganho', 'perdido'])
-    expect(calcularMetricasLeads(leads).negociosAbertos).toBe(3)
+  it('conta negócios abertos (novo + negociacao)', () => {
+    const leads = makeLeads(['novo', 'negociacao', 'ganho', 'perdido'])
+    expect(calcularMetricasLeads(leads).negociosAbertos).toBe(2)
   })
 
   it('soma valor do pipeline (leads ativos)', () => {
-    const leads = makeLeads(['novo', 'proposta', 'ganho'])
+    const leads = makeLeads(['novo', 'negociacao', 'ganho'])
     expect(calcularMetricasLeads(leads).valorPipeline).toBe(2000)
   })
 
@@ -41,7 +45,7 @@ describe('calcularMetricasLeads', () => {
   })
 
   it('retorna null para taxa quando não há ganho nem perdido', () => {
-    const leads = makeLeads(['novo', 'proposta'])
+    const leads = makeLeads(['novo', 'negociacao'])
     expect(calcularMetricasLeads(leads).taxaConversao).toBeNull()
   })
 

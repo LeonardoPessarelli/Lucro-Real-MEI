@@ -27,7 +27,7 @@ export default function KanbanColumn({
   const stage = STAGE_CONFIG[estagio]
   const isPerdido = estagio === 'perdido'
   const isGanho = estagio === 'ganho'
-  const totalValor = leads.reduce((acc, l) => acc + l.valor, 0)
+  const totalValor = leads.reduce((acc, l) => acc + (l.valor ?? 0), 0)
   const pct = totalPipeline > 0 ? Math.round((totalValor / totalPipeline) * 100) : 0
 
   return (

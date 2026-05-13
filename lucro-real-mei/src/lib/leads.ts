@@ -21,11 +21,11 @@ export interface Lead {
 
 export const STAGE_ORDER: LeadEstagio[] = ['novo', 'negociacao', 'ganho', 'perdido']
 
-export const STAGE_CONFIG: Record<LeadEstagio, { label: string; color: string; bg: string }> = {
-  novo:       { label: 'Novo',       color: '#3b82f6', bg: 'bg-blue-500/20'   },
-  negociacao: { label: 'Negociação', color: '#a855f7', bg: 'bg-purple-500/20' },
-  ganho:      { label: 'Ganho',      color: '#4ade80', bg: 'bg-green-500/20'  },
-  perdido:    { label: 'Perdido',    color: '#ef4444', bg: 'bg-red-500/20'    },
+export const STAGE_CONFIG: Record<LeadEstagio, { label: string; color: string; bgColor: string }> = {
+  novo:       { label: 'Novo',       color: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)'  },
+  negociacao: { label: 'Negociação', color: '#a855f7', bgColor: 'rgba(168,85,247,0.15)'  },
+  ganho:      { label: 'Ganho',      color: '#4ade80', bgColor: 'rgba(74,222,128,0.15)'  },
+  perdido:    { label: 'Perdido',    color: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'   },
 }
 
 export const ORIGENS = ['Instagram', 'Indicação', 'Site', 'Google', 'WhatsApp', 'Outro']

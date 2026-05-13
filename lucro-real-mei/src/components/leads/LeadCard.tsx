@@ -62,7 +62,7 @@ export default function LeadCard({ lead, onClick, compact = false }: Props) {
               className="kanban-card-valor"
               style={{ color: isFechado ? '#4ade80' : '#e5e7eb' }}
             >
-              {lead.valor.toLocaleString('pt-BR', {
+              {(lead.valor ?? 0).toLocaleString('pt-BR', {
                 style: 'currency',
                 currency: 'BRL',
                 maximumFractionDigits: 0,
@@ -86,7 +86,7 @@ export default function LeadCard({ lead, onClick, compact = false }: Props) {
               )}
               {/* Avatar do responsável */}
               <span className="kanban-card-avatar">
-                {iniciais(lead.responsavel)}
+                {iniciais(lead.responsavel ?? '')}
               </span>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function LeadCard({ lead, onClick, compact = false }: Props) {
         </div>
         <p className="text-[13px] font-bold mt-1.5 tabular-nums"
           style={{ color: isFechado ? '#4ade80' : '#9ca3af' }}>
-          {lead.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          {(lead.valor ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
         </p>
       </div>
     </button>

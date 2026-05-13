@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Lead, LeadEstagio } from '@/lib/leads'
-import { STAGE_ORDER, STAGE_CONFIG } from '@/lib/leads'
+import { STAGE_ORDER, STAGE_CONFIG, ORIGENS } from '@/lib/leads'
 
 function formatarCentavos(centavos: number): string {
   return (centavos / 100).toLocaleString('pt-BR', {
@@ -19,7 +19,7 @@ const schema = z.object({
   contato:     z.string().min(1, 'Contato obrigatório'),
   responsavel: z.string().min(1, 'Responsável obrigatório'),
   origem:      z.string().min(1, 'Selecione a origem'),
-  estagio:     z.enum(['novo', 'proposta', 'negociacao', 'ganho', 'perdido']),
+  estagio:     z.enum(['novo', 'negociacao', 'ganho', 'perdido']),
   prazo:       z.string().optional(),
   anotacoes:   z.string().optional(),
 })
@@ -40,7 +40,6 @@ function reaisParaCentavos(v: number): number {
   return Math.round(v * 100)
 }
 
-const ORIGENS = ['Instagram', 'LinkedIn', 'Indicação', 'Google', 'Site', 'Outro']
 
 export default function NegocioModal({
   mode,
@@ -51,7 +50,7 @@ export default function NegocioModal({
   onDelete,
 }: Props) {
   const [centavos, setCentavos] = useState(() =>
-    lead ? reaisParaCentavos(lead.valor) : 0
+    lead ? reaisParaCentavos(lead.valor ?? 0) : 0
   )
   const [erroValor, setErroValor] = useState(false)
 
@@ -63,11 +62,11 @@ export default function NegocioModal({
     resolver: zodResolver(schema),
     defaultValues: lead
       ? {
-          servico:     lead.servico,
-          nome:        lead.nome,
-          contato:     lead.contato,
-          responsavel: lead.responsavel,
-          origem:      lead.origem,
+          servico:     lead.servico ?? '',
+          nome:        lead.nome ?? '',
+          contato:     lead.contato ?? '',
+          responsavel: lead.responsavel ?? '',
+          origem:      lead.origem ?? '',
           estagio:     lead.estagio,
           prazo:       lead.prazo ?? '',
           anotacoes:   lead.anotacoes ?? '',
@@ -93,15 +92,19 @@ export default function NegocioModal({
   function onSubmit(data: FormData) {
     if (centavos <= 0) { setErroValor(true); return }
     onSave({
-      servico:     data.servico,
-      nome:        data.nome,
-      contato:     data.contato,
-      valor:       centavos / 100,
-      responsavel: data.responsavel,
-      origem:      data.origem,
-      estagio:     data.estagio as LeadEstagio,
-      prazo:       data.prazo || null,
-      anotacoes:   data.anotacoes || null,
+      servico:           data.servico,
+      nome:              data.nome,
+      contato:           data.contato,
+      valor:             centavos / 100,
+      responsavel:       data.responsavel,
+      origem:            data.origem,
+      estagio:           data.estagio as LeadEstagio,
+      prazo:             data.prazo || null,
+      anotacoes:         data.anotacoes || null,
+      colaborador:       lead?.colaborador ?? null,
+      ganho_em:          lead?.ganho_em ?? null,
+      lancamento_criado: lead?.lancamento_criado ?? false,
+      updated_at:        new Date().toISOString(),
     })
     onClose()
   }
