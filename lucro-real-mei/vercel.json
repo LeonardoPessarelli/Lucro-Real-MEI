@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/leads-ganho",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
