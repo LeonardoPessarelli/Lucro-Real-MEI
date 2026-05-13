@@ -63,11 +63,11 @@ export default function NegocioModal({
     resolver: zodResolver(schema),
     defaultValues: lead
       ? {
-          servico:     lead.servico,
-          nome:        lead.nome,
-          contato:     lead.contato,
-          responsavel: lead.responsavel,
-          origem:      lead.origem,
+          servico:     lead.servico ?? '',
+          nome:        lead.nome ?? '',
+          contato:     lead.contato ?? '',
+          responsavel: lead.responsavel ?? '',
+          origem:      lead.origem ?? '',
           estagio:     lead.estagio,
           prazo:       lead.prazo ?? '',
           anotacoes:   lead.anotacoes ?? '',
