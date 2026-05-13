@@ -24,7 +24,7 @@ export interface FinanceiroMes {
   lucro_pessoal: number
 }
 
-const ESTAGIOS_ATIVOS = ['novo', 'proposta', 'negociacao'] as const
+const ESTAGIOS_ATIVOS = ['novo', 'negociacao'] as const
 
 export function calcularMetricasLeads(leads: Lead[]): MetricasLeads {
   const ativos = leads.filter(l => (ESTAGIOS_ATIVOS as readonly string[]).includes(l.estagio))
@@ -35,7 +35,7 @@ export function calcularMetricasLeads(leads: Lead[]): MetricasLeads {
   return {
     totalLeads: leads.length,
     negociosAbertos: ativos.length,
-    valorPipeline: ativos.reduce((s, l) => s + l.valor, 0),
+    valorPipeline: ativos.reduce((s, l) => s + (l.valor ?? 0), 0),
     taxaConversao: total === 0 ? null : Math.round((ganhos / total) * 100),
   }
 }
