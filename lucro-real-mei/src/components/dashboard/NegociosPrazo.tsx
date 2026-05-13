@@ -36,7 +36,7 @@ export default function NegociosPrazo({ leads }: Props) {
                 <p className="text-xs" style={{ color: config.color }}>{config.label}</p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-sm font-semibold text-gray-200">{formatCurrency(lead.valor)}</p>
+                <p className="text-sm font-semibold text-gray-200">{formatCurrency(lead.valor ?? 0)}</p>
                 <p className={`text-xs font-medium ${urgente ? 'text-red-400' : 'text-gray-400'}`}>
                   {lead.dias === 0 ? 'Hoje' : lead.dias === 1 ? 'Amanhã' : `${lead.dias}d`}
                 </p>

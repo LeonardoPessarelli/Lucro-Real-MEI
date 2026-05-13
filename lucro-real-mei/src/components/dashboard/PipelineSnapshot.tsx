@@ -13,7 +13,7 @@ export default function PipelineSnapshot({ leads }: Props) {
       label: STAGE_CONFIG[estagio].label,
       color: STAGE_CONFIG[estagio].color,
       count: grupo.length,
-      valor: grupo.reduce((s, l) => s + l.valor, 0),
+      valor: grupo.reduce((s, l) => s + (l.valor ?? 0), 0),
     }
   })
 
