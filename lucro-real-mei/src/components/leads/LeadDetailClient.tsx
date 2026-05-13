@@ -17,15 +17,15 @@ export default function LeadDetailClient({ lead }: Props) {
   function handleSave(data: Omit<Lead, 'id' | 'workspace_id' | 'created_at'>) {
     startTransition(async () => {
       await updateLeadAction(lead.id, data)
+      setEditando(false)
     })
-    setEditando(false)
   }
 
   function handleDelete(deletedId: string) {
     startTransition(async () => {
       await deleteLeadAction(deletedId)
+      router.back()
     })
-    router.back()
   }
 
   return (

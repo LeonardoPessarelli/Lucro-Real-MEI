@@ -27,21 +27,22 @@ export default function LeadsClient({ leads }: Props) {
 
   function handleSave(data: Omit<Lead, 'id' | 'workspace_id' | 'created_at'>) {
     if (!modal) return
+    const capturedModal = modal
     startTransition(async () => {
-      if (modal.mode === 'new') {
+      if (capturedModal.mode === 'new') {
         await createLeadAction(data)
       } else {
-        await updateLeadAction(modal.lead.id, data)
+        await updateLeadAction(capturedModal.lead.id, data)
       }
+      setModal(null)
     })
-    setModal(null)
   }
 
   function handleDelete(id: string) {
     startTransition(async () => {
       await deleteLeadAction(id)
+      setModal(null)
     })
-    setModal(null)
   }
 
   return (

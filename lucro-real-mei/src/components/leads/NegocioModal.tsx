@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Lead, LeadEstagio } from '@/lib/leads'
-import { STAGE_ORDER, STAGE_CONFIG } from '@/lib/leads'
+import { STAGE_ORDER, STAGE_CONFIG, ORIGENS } from '@/lib/leads'
 
 function formatarCentavos(centavos: number): string {
   return (centavos / 100).toLocaleString('pt-BR', {
@@ -40,7 +40,6 @@ function reaisParaCentavos(v: number): number {
   return Math.round(v * 100)
 }
 
-const ORIGENS = ['Instagram', 'LinkedIn', 'Indicação', 'Google', 'Site', 'Outro']
 
 export default function NegocioModal({
   mode,
@@ -105,7 +104,7 @@ export default function NegocioModal({
       colaborador:       lead?.colaborador ?? null,
       ganho_em:          lead?.ganho_em ?? null,
       lancamento_criado: lead?.lancamento_criado ?? false,
-      updated_at:        lead?.updated_at ?? new Date().toISOString(),
+      updated_at:        new Date().toISOString(),
     })
     onClose()
   }
